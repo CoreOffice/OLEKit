@@ -44,6 +44,21 @@ enum OLEError: Error {
 
 /**
  [PL] header structure according to AAF specifications:
+
+ typedef unsigned long ULONG;    // 4 Bytes
+ typedef unsigned short USHORT;  // 2 Bytes
+ typedef short OFFSET;           // 2 Bytes
+ typedef ULONG SECT;             // 4 Bytes
+ typedef ULONG FSINDEX;          // 4 Bytes
+ typedef USHORT FSOFFSET;        // 2 Bytes
+ typedef USHORT WCHAR;           // 2 Bytes
+ typedef ULONG DFSIGNATURE;      // 4 Bytes
+ typedef unsigned char BYTE;     // 1 Byte
+ typedef unsigned short WORD;    // 2 Bytes
+ typedef unsigned long DWORD;    // 4 Bytes
+ typedef ULONG SID;              // 4 Bytes
+ typedef GUID CLSID;             // 16 Bytes
+
  struct StructuredStorageHeader { // [offset from start (bytes), length (bytes)]
  BYTE _abSig[8]; // [00H,08] {0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1,
                  // 0x1a, 0xe1} for current version
