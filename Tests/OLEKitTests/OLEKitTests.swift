@@ -2,14 +2,19 @@
 import XCTest
 
 final class OLEKitTests: XCTestCase {
-  func testExample() {
-    // This is an example of a functional test case.
-    // Use XCTAssert and related functions to verify your tests produce the correct
-    // results.
-    XCTAssertEqual(OLEKit().text, "Hello, World!")
-  }
+  func testIsOLE() throws {
+    let negativeURL = URL(fileURLWithPath: #file)
 
-  static var allTests = [
-    ("testExample", testExample),
-  ]
+    let negativeFH = try FileHandle(forReadingFrom: negativeURL)
+
+    XCTAssertFalse(try negativeFH.isOLE())
+
+    let positiveURL = URL(fileURLWithPath: #file)
+      .deletingLastPathComponent()
+      .appendingPathComponent("TestWorkbook.xlsx")
+
+    let positiveFH = try FileHandle(forReadingFrom: positiveURL)
+
+    XCTAssertTrue(try positiveFH.isOLE())
+  }
 }
