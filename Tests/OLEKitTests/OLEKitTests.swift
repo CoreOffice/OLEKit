@@ -13,8 +13,7 @@ final class OLEKitTests: XCTestCase {
       .deletingLastPathComponent()
       .appendingPathComponent("TestWorkbook.xlsx")
 
-    let positiveFH = try FileHandle(forReadingFrom: positiveURL)
-
-    XCTAssertTrue(try positiveFH.isOLE())
+    let ole = try OLEFile(positiveURL)
+    XCTAssertEqual(ole.miniSectorSize, 64)
   }
 }
