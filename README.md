@@ -2,7 +2,7 @@
 
 Swift support for Microsoft OLE2 format, also known as Structured Storage, [Compound File Binary Format](https://en.wikipedia.org/wiki/Compound_File_Binary_Format) or Compound Document File Format.
 
-A few examples of files that utilize this format:
+Some of the file formats that utilize it:
 
 * Microsoft Office 97-2003 documents (Word .doc, Excel .xls, PowerPoint .ppt, Visio .vsd, Project .mpp) 
 * vbaProject.bin in MS Office 2007+ files
