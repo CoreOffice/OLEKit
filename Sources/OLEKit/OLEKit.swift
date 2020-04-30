@@ -43,7 +43,7 @@ enum OLEError: Error {
 }
 
 /**
- [PL] header structure according to AAF specifications:
+ Header structure according to AAF specifications:
 
  typedef unsigned long ULONG;    // 4 Bytes
  typedef unsigned short USHORT;  // 2 Bytes
