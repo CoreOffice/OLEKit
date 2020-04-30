@@ -13,4 +13,4 @@ Some of the file formats that utilize it:
 * Olympus FluoView OIB files
 * McAfee antivirus quarantine files
 
-...and more. If you know of a file format that is based on CFBF, please report it in [issues](/issues) so that it's added to the list.
+...and more. If you know of a file format that is based on CFBF, please submit [a pull request](https://github.com/MaxDesiatov/OLEKit/edit/master/README.md) so that it's added to the list.
