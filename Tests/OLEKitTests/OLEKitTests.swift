@@ -2,18 +2,26 @@
 import XCTest
 
 final class OLEKitTests: XCTestCase {
-  func testIsOLE() throws {
+  func testIsOLENegative() throws {
     let negativeURL = URL(fileURLWithPath: #file)
 
-    let negativeFH = try FileHandle(forReadingFrom: negativeURL)
+    switch Result(catching: { try OLEFile(negativeURL) }) {
+    case .success:
+      XCTFail("OLEKit did not detect that file is not ole")
+    case let .failure(error):
+      guard let error = error as? OLEError
+      else { return XCTFail("error thrown is not OLEError") }
 
-    XCTAssertFalse(try negativeFH.isOLE())
+      XCTAssertEqual(error, .fileIsNotOLE)
+    }
+  }
 
+  func testISOLEPositive() throws {
     let positiveURL = URL(fileURLWithPath: #file)
       .deletingLastPathComponent()
       .appendingPathComponent("TestWorkbook.xlsx")
 
     let ole = try OLEFile(positiveURL)
-    XCTAssertEqual(ole.miniSectorSize, 64)
+    XCTAssertEqual(ole.header.miniSectorSize, 64)
   }
 }
