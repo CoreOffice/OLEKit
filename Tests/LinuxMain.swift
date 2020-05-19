@@ -3,5 +3,6 @@ import XCTest
 import OLEKitTests
 
 var tests = [XCTestCaseEntry]()
-tests += OLEKitTests.allTests()
+tests += OLEKitTests.__allTests()
+
 XCTMain(tests)
