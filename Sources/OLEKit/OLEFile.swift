@@ -24,8 +24,15 @@ public final class OLEFile {
 
     fileHandle = try FileHandle(forReadingFrom: url)
 
+    #if compiler(>=5.1)
     guard let data = try fileHandle.read(upToCount: 512)
     else { throw OLEError.incompleteHeader }
+    #else
+    guard fileSize >= 512
+    else { throw OLEError.incompleteHeader }
+
+    let data = try fileHandle.readData(ofSize: 512)
+    #endif
 
     var stream = DataStream(data)
     header = try Header(&stream, fileSize: fileSize)
