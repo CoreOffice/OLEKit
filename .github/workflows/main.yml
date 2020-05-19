@@ -59,3 +59,12 @@ jobs:
 
       - name: Test with Xcode 11.4
         run: ./xcode_test.sh Xcode_11.4.1
+
+  linux-5_0:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: docker://swift:5.1.5
+        run: swift test
