@@ -65,6 +65,7 @@ public final class OLEFile {
   private let fileHandle: FileHandle
   let header: Header
 
+  /// File Allocation Table, also known as: SAT – Sector Allocation Table
   private let fat: [UInt32]
 
   public init(_ url: URL) throws {
@@ -113,7 +114,8 @@ public final class OLEFile {
       fat = Array(fat.prefix(header.numberOfSectors))
     }
 
-    // FIXME: check DIFAT if file is larger than 6.8MB
+    // FIXME: check Double-Indirect File Allocation Table (DIFAT) if file is larger
+    // than 6.8MB
 
     self.fat = fat
   }
