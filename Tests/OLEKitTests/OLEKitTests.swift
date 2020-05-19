@@ -12,7 +12,7 @@ final class OLEKitTests: XCTestCase {
       guard let error = error as? OLEError
       else { return XCTFail("error thrown is not OLEError") }
 
-      XCTAssertEqual(error, .fileIsNotOLE)
+      XCTAssertEqual(error, .fileIsNotOLE(negativeURL))
     }
   }
 
