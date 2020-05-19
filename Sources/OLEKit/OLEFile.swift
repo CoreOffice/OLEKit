@@ -31,7 +31,7 @@ public final class OLEFile {
     guard fileSize >= 512
     else { throw OLEError.incompleteHeader }
 
-    let data = try fileHandle.readData(ofSize: 512)
+    let data = try fileHandle.readData(ofLength: 512)
     #endif
 
     var stream = DataStream(data)
