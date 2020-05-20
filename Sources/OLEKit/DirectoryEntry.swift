@@ -21,11 +21,17 @@
  I: uint32, total stream size in bytes if stream (high 32 bits), 0 otherwise
  */
 struct DirectoryEntry: Equatable {
+  enum Color: UInt8 {
+    case black = 0
+    case red = 1
+  }
+
   static let sizeInBytes = 128
 
   let name: String
+  let type: StorageType
 
-  init(_ stream: inout DataStream) throws {
+  init(_ stream: inout DataStream, index: UInt32) throws {
     var utf16Name = [UInt16]()
     for _ in 0..<32 {
       utf16Name.append(stream.read())
@@ -35,5 +41,18 @@ struct DirectoryEntry: Equatable {
     let bytesWithNull: UInt16 = stream.read()
 
     name = String(utf16CodeUnits: &utf16Name, count: (Int(bytesWithNull) - 2) / 2)
+
+    let rawType: UInt8 = stream.read()
+    guard let type = StorageType(rawValue: rawType)
+    else { throw OLEError.incorrectStorageType(actual: rawType) }
+
+    self.type = type
+
+    guard !(type == .root && index != 0) else { throw OLEError.duplicateRootEntry }
+    guard !(index == 0 && type != .root) else { throw OLEError.incorrectRootEntry(actual: type) }
+
+    let rawColor: UInt8 = stream.read()
+    guard let color = Color(rawValue: rawColor)
+    else { throw OLEError.incorrectDirectoryEntryColor(actual: rawColor) }
   }
 }

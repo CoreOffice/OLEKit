@@ -4,17 +4,21 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
   case fileIsNotOLE(URL)
   case incorrectCLSID
   case incompleteHeader
+  case duplicateRootEntry
   case invalidEmptyOLEStream
   case bigEndianNotSupported
   case incorrectHeaderReservedBytes
+  case incorrectStorageType(actual: UInt8)
   case invalidFATSector(byteOffset: UInt64)
+  case incorrectRootEntry(actual: StorageType)
   case streamTooLarge(actual: Int, expected: Int)
+  case incorrectDirectoryEntryColor(actual: UInt8)
   case invalidOLEStreamSectorID(id: UInt32, total: Int)
   case incorrectSectorSize(actual: UInt16, expected: UInt16)
   case incorrectDLLVersion(actual: UInt16, expected: [UInt16])
   case incorrectMiniSectorSize(actual: UInt16, expected: UInt16)
   case incorrectMiniStreamCutoffSize(actual: UInt32, expected: UInt32)
-  case incompleteOLEStream(firstSectorID: UInt32, actual: Int, expected: Int)
+  case incompleteStream(firstSectorID: UInt32, actual: Int, expected: Int)
   case incorrectNumberOfDirectorySectors(actual: UInt32, expected: UInt32)
 
   public var description: String {
@@ -25,17 +29,27 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
       return "CLSID value in the file header is not set according to the spec"
     case .incompleteHeader:
       return "Given file has an incomplete header"
+    case .duplicateRootEntry:
+      return "Duplicate OLE root directory entry stored in the file"
     case .invalidEmptyOLEStream:
       return "Incorrect OLE sector index for empty stream"
     case .bigEndianNotSupported:
       return "Big endian files are not supported"
     case .incorrectHeaderReservedBytes:
       return "Incorrect reserved bytes in the file header, expected those to be zeros"
+    case let .incorrectRootEntry(actual):
+      return
+        """
+        Incorrect OLE root directory entry stored in the file with type \(actual), \
+        expected type \(StorageType.root.rawValue)
+        """
+    case let .incorrectStorageType(actual):
+      return "Incorrect OLE storage type \(actual), expected a number in 0...5 range"
     case let .invalidOLEStreamSectorID(id, total):
       return "Incorrect OLE FAT, sectorID \(id) is out of total bounds of \(total) sectors"
     case let .invalidFATSector(byteOffset):
       return "No sector is available at byte offset \(byteOffset)"
-    case let .incompleteOLEStream(sectorID, actual, expected):
+    case let .incompleteStream(sectorID, actual, expected):
       return
         """
         Incomplete OLE stream that starts at sector \(sectorID),
@@ -47,6 +61,8 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
         Malformed OLE document, stream too large with \(actual) sectors,
         expected \(expected)
         """
+    case let .incorrectDirectoryEntryColor(actual):
+      return "Incorrect OLE directory entry color \(actual), expected either 0 or 1"
     case let .incorrectSectorSize(actual, expected):
       return
         """

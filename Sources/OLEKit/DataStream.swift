@@ -8,6 +8,12 @@ struct DataStream {
     self.data = data
   }
 
+  mutating func read() -> UInt8 {
+    defer { byteOffset += 1 }
+
+    return data[byteOffset]
+  }
+
   mutating func read() -> UInt16 {
     defer { byteOffset += 2 }
 

@@ -27,7 +27,7 @@ extension DataStream {
       guard currentSectorID != SectorID.endOfChain.rawValue else {
         if expectedStreamSize != nil {
           // This means that the stream is smaller than declared:
-          throw OLEError.incompleteOLEStream(
+          throw OLEError.incompleteStream(
             firstSectorID: sectorID,
             actual: data.count,
             expected: numberOfSectors * sectorSize
@@ -60,7 +60,7 @@ extension DataStream {
       data = data.prefix(calculatedStreamSize)
     } else if let expectedStreamSize = expectedStreamSize, data.count < expectedStreamSize {
       // the stream size was not inferred, but was smaller than expected
-      throw OLEError.incompleteOLEStream(
+      throw OLEError.incompleteStream(
         firstSectorID: sectorID,
         actual: data.count,
         expected: expectedStreamSize

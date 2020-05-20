@@ -1,20 +1,20 @@
 /// Object types in storage (from AAF specifications)
-enum StorageType: Int {
+public enum StorageType: UInt8 {
   /// Empty directory entry
-  case empty
+  case empty = 0
 
   /// Storage object
-  case storage
+  case storage = 1
 
   /// Stream object
-  case stream
+  case stream = 2
 
   /// `ILockBytes` object
-  case lockBytes
+  case lockBytes = 3
 
   /// `IPropertyStorage` object
-  case property
+  case property = 4
 
   /// Root storage
-  case root
+  case root = 5
 }

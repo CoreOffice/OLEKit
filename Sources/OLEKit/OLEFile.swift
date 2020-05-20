@@ -86,6 +86,6 @@ public final class OLEFile {
     // can be calculated.
     let maxEntries = directoryStream.data.count / DirectoryEntry.sizeInBytes
 
-    directories = try [DirectoryEntry(&directoryStream)]
+    directories = try [DirectoryEntry(&directoryStream, index: 0)]
   }
 }
