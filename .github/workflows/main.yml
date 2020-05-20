@@ -14,7 +14,7 @@ on:
 jobs:
   xcode-11_0:
     # The type of runner that the job will run on
-    runs-on: macOS-10.15
+    runs-on: macos-10.15
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -25,7 +25,7 @@ jobs:
         run: ./xcode_test.sh Xcode_11
 
   xcode-11_1:
-    runs-on: macOS-10.15
+    runs-on: macos-10.15
 
     steps:
       - uses: actions/checkout@v2
@@ -34,7 +34,7 @@ jobs:
         run: ./xcode_test.sh Xcode_11.1
 
   xcode-11_2:
-    runs-on: macOS-10.15
+    runs-on: macos-10.15
 
     steps:
       - uses: actions/checkout@v2
@@ -43,7 +43,7 @@ jobs:
         run: ./xcode_test.sh Xcode_11.2.1
 
   xcode-11_3:
-    runs-on: macOS-10.15
+    runs-on: macos-10.15
 
     steps:
       - uses: actions/checkout@v2
@@ -52,7 +52,7 @@ jobs:
         run: ./xcode_test.sh Xcode_11.3.1
 
   xcode-11_4:
-    runs-on: macOS-10.15
+    runs-on: macos-10.15
 
     steps:
       - uses: actions/checkout@v2
