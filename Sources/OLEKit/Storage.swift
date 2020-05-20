@@ -1,5 +1,5 @@
 /// Object types in storage (from AAF specifications)
-enum StorageType {
+enum StorageType: Int {
   /// Empty directory entry
   case empty
 

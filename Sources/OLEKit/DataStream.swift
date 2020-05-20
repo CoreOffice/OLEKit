@@ -2,30 +2,30 @@ import Foundation
 
 struct DataStream {
   let data: Data
-  var index = 0
+  var byteOffset = 0
 
   init(_ data: Data) {
     self.data = data
   }
 
   mutating func read() -> UInt16 {
-    defer { index += 2 }
+    defer { byteOffset += 2 }
 
-    return UInt16(data[index + 1]) << 8 + UInt16(data[index])
+    return UInt16(data[byteOffset + 1]) << 8 + UInt16(data[byteOffset])
   }
 
   mutating func read() -> UInt32 {
-    defer { index += 4 }
+    defer { byteOffset += 4 }
 
-    return (UInt32(data[index + 3]) << 24)
-      + (UInt32(data[index + 2]) << 16)
-      + (UInt32(data[index + 1]) << 8)
-      + UInt32(data[index])
+    return (UInt32(data[byteOffset + 3]) << 24)
+      + (UInt32(data[byteOffset + 2]) << 16)
+      + (UInt32(data[byteOffset + 1]) << 8)
+      + UInt32(data[byteOffset])
   }
 
   mutating func read(count: Int) -> Data {
-    defer { index += count }
+    defer { byteOffset += count }
 
-    return data[index..<index + count]
+    return data[byteOffset..<byteOffset + count]
   }
 }
