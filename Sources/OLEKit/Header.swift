@@ -3,9 +3,6 @@ import Foundation
 /// Magic bytes that should be at the beginning of every OLE file:
 private let magic = Data([0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1])
 
-/// Size of the header, which is a sum of sizes of all fields from the spec.
-private let headerSize = 76
-
 /**
  Header structure according to AAF specifications:
 
@@ -57,6 +54,9 @@ private let headerSize = 76
  };
  */
 struct Header {
+  /// Size of the header, which is a sum of sizes of all fields from the spec.
+  static let sizeInBytes = 76
+
   let minorVersion: UInt16
   let dllVersion: UInt16
   let sectorSize: UInt16
@@ -74,7 +74,7 @@ struct Header {
   let numberOfSectors: Int
 
   init(_ stream: inout DataStream, fileSize: Int, url: URL) throws {
-    assert(stream.data.count > headerSize)
+    assert(stream.data.count > Self.sizeInBytes)
 
     guard stream.read(count: magic.count) == magic else { throw OLEError.fileIsNotOLE(url) }
 

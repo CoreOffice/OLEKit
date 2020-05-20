@@ -1,5 +1,3 @@
-private let directoryEntrySize = 128
-
 /**
  OLE2 Directory Entry pointing to a stream or a storage
 
@@ -22,12 +20,12 @@ private let directoryEntrySize = 128
  I: uint32, total stream size in bytes if stream (low 32 bits), 0 otherwise
  I: uint32, total stream size in bytes if stream (high 32 bits), 0 otherwise
  */
-struct DirectoryEntry {
+struct DirectoryEntry: Equatable {
+  static let sizeInBytes = 128
+
   let name: String
 
   init(_ stream: inout DataStream) throws {
-    assert(stream.data.count == directoryEntrySize)
-
     var utf16Name = [UInt16]()
     for _ in 0..<32 {
       utf16Name.append(stream.read())

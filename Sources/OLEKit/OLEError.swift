@@ -8,12 +8,13 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
   case bigEndianNotSupported
   case incorrectHeaderReservedBytes
   case invalidFATSector(byteOffset: UInt64)
-  case streamTooLarge(actual: UInt64, expected: UInt64)
-  case incompleteOLEStream(start: UInt32, expected: UInt64)
+  case streamTooLarge(actual: Int, expected: Int)
+  case invalidOLEStreamSectorID(id: UInt32, total: Int)
   case incorrectSectorSize(actual: UInt16, expected: UInt16)
   case incorrectDLLVersion(actual: UInt16, expected: [UInt16])
   case incorrectMiniSectorSize(actual: UInt16, expected: UInt16)
   case incorrectMiniStreamCutoffSize(actual: UInt32, expected: UInt32)
+  case incompleteOLEStream(firstSectorID: UInt32, actual: Int, expected: Int)
   case incorrectNumberOfDirectorySectors(actual: UInt32, expected: UInt32)
 
   public var description: String {
@@ -28,13 +29,17 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
       return "Incorrect OLE sector index for empty stream"
     case .bigEndianNotSupported:
       return "Big endian files are not supported"
+    case .incorrectHeaderReservedBytes:
+      return "Incorrect reserved bytes in the file header, expected those to be zeros"
+    case let .invalidOLEStreamSectorID(id, total):
+      return "Incorrect OLE FAT, sectorID \(id) is out of total bounds of \(total) sectors"
     case let .invalidFATSector(byteOffset):
       return "No sector is available at byte offset \(byteOffset)"
-    case let .incompleteOLEStream(start, expected):
+    case let .incompleteOLEStream(sectorID, actual, expected):
       return
         """
-        Incomplete OLE stream that starts at sector \(start),
-        expected it to contain at least \(expected) sectors
+        Incomplete OLE stream that starts at sector \(sectorID),
+        expected it to contain at least \(expected) bytes. but its size is \(actual) bytes
         """
     case let .streamTooLarge(actual, expected):
       return
@@ -60,8 +65,6 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
         Incorrect mini sector size \(actual) specified in the file header, \
         expected size \(expected)
         """
-    case .incorrectHeaderReservedBytes:
-      return "Incorrect reserved bytes in the file header, expected those to be zeros"
     case let .incorrectMiniStreamCutoffSize(actual, expected):
       return
         """

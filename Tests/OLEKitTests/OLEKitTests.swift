@@ -23,5 +23,6 @@ final class OLEKitTests: XCTestCase {
 
     let ole = try OLEFile(positiveURL)
     XCTAssertEqual(ole.header.miniSectorSize, 64)
+    XCTAssertEqual(ole.directories.map { $0.name }, ["Root Entry"])
   }
 }

@@ -1,11 +1,28 @@
 import Foundation
 
+func loadDirectory(
+  at sectorID: UInt32,
+  in fileHandle: FileHandle,
+  _ header: Header,
+  fat: [UInt32]
+) throws -> DataStream {
+  try DataStream(
+    fileHandle,
+    sectorID: sectorID,
+    firstSectorOffset: UInt64(header.sectorSize),
+    sectorSize: header.sectorSize,
+    fat: fat
+  )
+}
+
 public final class OLEFile {
   private let fileHandle: FileHandle
   let header: Header
 
   /// File Allocation Table, also known as: SAT – Sector Allocation Table
   private let fat: [UInt32]
+
+  let directories: [DirectoryEntry]
 
   public init(_ url: URL) throws {
     let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
@@ -57,5 +74,18 @@ public final class OLEFile {
     // than 6.8MB
 
     self.fat = fat
+
+    var directoryStream = try loadDirectory(
+      at: header.firstDirectorySector,
+      in: fileHandle,
+      header,
+      fat: fat
+    )
+
+    // To detect malformed documents the maximum number of directory entries
+    // can be calculated.
+    let maxEntries = directoryStream.data.count / DirectoryEntry.sizeInBytes
+
+    directories = try [DirectoryEntry(&directoryStream)]
   }
 }
