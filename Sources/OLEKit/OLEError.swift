@@ -5,7 +5,7 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
   case incorrectCLSID
   case incompleteHeader
   case duplicateRootEntry
-  case invalidEmptyOLEStream
+  case invalidEmptyStream
   case bigEndianNotSupported
   case incorrectHeaderReservedBytes
   case incorrectStorageType(actual: UInt8)
@@ -15,6 +15,7 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
   case incorrectDirectoryEntryColor(actual: UInt8)
   case invalidOLEStreamSectorID(id: UInt32, total: Int)
   case incorrectSectorSize(actual: UInt16, expected: UInt16)
+  case directoryEntryIndexOOB(actual: UInt32, expected: Int)
   case incorrectDLLVersion(actual: UInt16, expected: [UInt16])
   case incorrectMiniSectorSize(actual: UInt16, expected: UInt16)
   case incorrectMiniStreamCutoffSize(actual: UInt32, expected: UInt32)
@@ -31,7 +32,7 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
       return "Given file has an incomplete header"
     case .duplicateRootEntry:
       return "Duplicate OLE root directory entry stored in the file"
-    case .invalidEmptyOLEStream:
+    case .invalidEmptyStream:
       return "Incorrect OLE sector index for empty stream"
     case .bigEndianNotSupported:
       return "Big endian files are not supported"
@@ -68,6 +69,11 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
         """
         Incorrect sector size \(actual) inferred from the file header, \
         expected size \(expected)
+        """
+    case let .directoryEntryIndexOOB(actual, expected):
+      return
+        """
+        Index \(actual) of a directory entry is out of range, expected it not to exceed \(expected)
         """
     case let .incorrectDLLVersion(actual, expected):
       return

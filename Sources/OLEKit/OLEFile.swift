@@ -22,7 +22,7 @@ public final class OLEFile {
   /// File Allocation Table, also known as: SAT – Sector Allocation Table
   private let fat: [UInt32]
 
-  let directories: [DirectoryEntry]
+  let root: DirectoryEntry
 
   public init(_ url: URL) throws {
     let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
@@ -75,17 +75,11 @@ public final class OLEFile {
 
     self.fat = fat
 
-    var directoryStream = try loadDirectory(
-      at: header.firstDirectorySector,
+    root = try DirectoryEntry(
+      rootAt: header.firstDirectorySector,
       in: fileHandle,
       header,
       fat: fat
     )
-
-    // To detect malformed documents the maximum number of directory entries
-    // can be calculated.
-    let maxEntries = directoryStream.data.count / DirectoryEntry.sizeInBytes
-
-    directories = try [DirectoryEntry(&directoryStream, index: 0)]
   }
 }

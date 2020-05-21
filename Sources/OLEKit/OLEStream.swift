@@ -10,7 +10,7 @@ extension DataStream {
     fat: [UInt32]
   ) throws {
     guard !(expectedStreamSize == 0 && sectorID == SectorID.endOfChain.rawValue)
-    else { throw OLEError.invalidEmptyOLEStream }
+    else { throw OLEError.invalidEmptyStream }
 
     let sectorSize = Int(sectorSize)
     let calculatedStreamSize = expectedStreamSize ?? fat.count * Int(sectorSize)
@@ -41,7 +41,9 @@ extension DataStream {
       guard currentSectorID >= 0 && UInt64(currentSectorID) < fat.count
       else { throw OLEError.invalidOLEStreamSectorID(id: currentSectorID, total: fat.count) }
 
-      fileHandle.seek(toFileOffset: firstSectorOffset + UInt64(sectorSize) * UInt64(sectorID))
+      fileHandle.seek(
+        toFileOffset: firstSectorOffset + UInt64(sectorSize) * UInt64(currentSectorID)
+      )
 
       // if sector is the last of the file, sometimes it is not a
       // complete sector (of 512 or 4K), so we may read less than

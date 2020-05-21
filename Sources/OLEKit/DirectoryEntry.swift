@@ -1,3 +1,7 @@
+import Foundation
+
+private let noStream: UInt32 = 0xFFFF_FFFF
+
 /**
  OLE2 Directory Entry pointing to a stream or a storage
 
@@ -31,7 +35,22 @@ struct DirectoryEntry: Equatable {
   let name: String
   let type: StorageType
 
-  init(_ stream: inout DataStream, index: UInt32) throws {
+  // Directory entries are organised as a
+  // [red-black tree](https://en.wikipedia.org/wiki/Red%E2%80%93black_tree)
+  let leftIndex: UInt32
+  let rightIndex: UInt32
+  let childIndex: UInt32
+
+  let firstStreamSector: UInt32
+  let streamSize: UInt64
+
+  let children: [DirectoryEntry]
+
+  private init?(_ stream: inout DataStream, index: UInt32, sectorSize: UInt16) throws {
+    guard index != noStream else { return nil }
+
+    stream.byteOffset = Int(index) * Self.sizeInBytes
+
     var utf16Name = [UInt16]()
     for _ in 0..<32 {
       utf16Name.append(stream.read())
@@ -51,8 +70,67 @@ struct DirectoryEntry: Equatable {
     guard !(type == .root && index != 0) else { throw OLEError.duplicateRootEntry }
     guard !(index == 0 && type != .root) else { throw OLEError.incorrectRootEntry(actual: type) }
 
+    // color value is unused, but still checked
     let rawColor: UInt8 = stream.read()
-    guard let color = Color(rawValue: rawColor)
+    guard Color(rawValue: rawColor) != nil
     else { throw OLEError.incorrectDirectoryEntryColor(actual: rawColor) }
+
+    leftIndex = stream.read()
+    rightIndex = stream.read()
+    childIndex = stream.read()
+
+    // FIXME: skipping clsid, which is unused for now
+    stream.byteOffset += 16
+
+    // FIXME: skipping user flags (4 bytes) and timestamps (16 bytes)
+    stream.byteOffset += 20
+
+    firstStreamSector = stream.read()
+
+    let sizeLowBits: UInt32 = stream.read()
+    let sizeHighBits: UInt32 = stream.read()
+
+    // sizeHighBits is only used for 4K sectors, it should be zero for 512 bytes
+    // sectors, BUT apparently some implementations set it as 0xFFFFFFFF, 1
+    // or some other value so it cannot be raised as a defect in general
+    if sectorSize == 512 {
+      streamSize = UInt64(sizeLowBits)
+    } else {
+      streamSize = UInt64(sizeLowBits) + (UInt64(sizeHighBits) << 32)
+    }
+
+    // To detect malformed documents the maximum number of directory entries
+    // can be calculated.
+    let maxEntries = stream.data.count / DirectoryEntry.sizeInBytes
+
+    let idx = childIndex
+    guard idx == noStream || idx < maxEntries
+    else { throw OLEError.directoryEntryIndexOOB(actual: childIndex, expected: maxEntries) }
+
+    children = try [leftIndex, childIndex, rightIndex].compactMap {
+      try DirectoryEntry(&stream, index: $0, sectorSize: sectorSize)
+    }
+  }
+
+  init?(
+    index: UInt32,
+    at sectorID: UInt32,
+    in fileHandle: FileHandle,
+    _ header: Header,
+    fat: [UInt32]
+  ) throws {
+    var stream = try DataStream(
+      fileHandle,
+      sectorID: sectorID,
+      firstSectorOffset: UInt64(header.sectorSize),
+      sectorSize: header.sectorSize,
+      fat: fat
+    )
+
+    try self.init(&stream, index: index, sectorSize: header.sectorSize)
+  }
+
+  init(rootAt sectorID: UInt32, in fileHandle: FileHandle, _ header: Header, fat: [UInt32]) throws {
+    try self.init(index: 0, at: sectorID, in: fileHandle, header, fat: fat)!
   }
 }
