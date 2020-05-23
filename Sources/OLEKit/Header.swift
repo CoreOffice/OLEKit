@@ -73,10 +73,10 @@ struct Header {
   let numDIFATSectors: UInt32
   let numberOfSectors: Int
 
-  init(_ stream: inout DataStream, fileSize: Int, url: URL) throws {
+  init(_ stream: inout DataStream, fileSize: Int, path: String) throws {
     assert(stream.data.count > Self.sizeInBytes)
 
-    guard stream.read(count: magic.count) == magic else { throw OLEError.fileIsNotOLE(url) }
+    guard stream.read(count: magic.count) == magic else { throw OLEError.fileIsNotOLE(path) }
 
     // according to AAF specs, CLSID should always be zero
     guard stream.read(count: 16) == Data(repeating: 0, count: 16) else {

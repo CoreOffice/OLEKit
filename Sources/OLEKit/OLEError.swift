@@ -1,16 +1,18 @@
 import Foundation
 
 public enum OLEError: Error, Equatable, CustomStringConvertible {
-  case fileIsNotOLE(URL)
   case incorrectCLSID
   case incompleteHeader
   case duplicateRootEntry
   case invalidEmptyStream
   case bigEndianNotSupported
+  case fileIsNotOLE(String)
   case incorrectHeaderReservedBytes
+  case fileDoesNotExist(String)
   case incorrectStorageType(actual: UInt8)
   case invalidFATSector(byteOffset: UInt64)
   case incorrectRootEntry(actual: StorageType)
+  case fileNotAvailableForReading(path: String)
   case streamTooLarge(actual: Int, expected: Int)
   case incorrectDirectoryEntryColor(actual: UInt8)
   case invalidOLEStreamSectorID(id: UInt32, total: Int)
@@ -24,8 +26,6 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
 
   public var description: String {
     switch self {
-    case let .fileIsNotOLE(url):
-      return "Given file at URL \(url) is not an OLE file"
     case .incorrectCLSID:
       return "CLSID value in the file header is not set according to the spec"
     case .incompleteHeader:
@@ -34,8 +34,14 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
       return "Duplicate OLE root directory entry stored in the file"
     case .invalidEmptyStream:
       return "Incorrect OLE sector index for empty stream"
+    case let .fileIsNotOLE(path):
+      return "Given file at path \(path) is not an OLE file"
     case .bigEndianNotSupported:
       return "Big endian files are not supported"
+    case let .fileDoesNotExist(path):
+      return "File does not exist at path \(path)"
+    case let .fileNotAvailableForReading(path):
+      return "File is not available for reading at path \(path)"
     case .incorrectHeaderReservedBytes:
       return "Incorrect reserved bytes in the file header, expected those to be zeros"
     case let .incorrectRootEntry(actual):

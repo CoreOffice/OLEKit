@@ -3,16 +3,16 @@ import XCTest
 
 final class OLEKitTests: XCTestCase {
   func testIsOLENegative() throws {
-    let negativeURL = URL(fileURLWithPath: #file)
+    let negativePath = URL(fileURLWithPath: #file).path
 
-    switch Result(catching: { try OLEFile(negativeURL) }) {
+    switch Result(catching: { try OLEFile(negativePath) }) {
     case .success:
       XCTFail("OLEKit did not detect that file is not ole")
     case let .failure(error):
       guard let error = error as? OLEError
       else { return XCTFail("error thrown is not OLEError") }
 
-      XCTAssertEqual(error, .fileIsNotOLE(negativeURL))
+      XCTAssertEqual(error, .fileIsNotOLE(negativePath))
     }
   }
 
@@ -21,7 +21,7 @@ final class OLEKitTests: XCTestCase {
       .deletingLastPathComponent()
       .appendingPathComponent("TestWorkbook.xlsx")
 
-    let ole = try OLEFile(positiveURL)
+    let ole = try OLEFile(positiveURL.path)
     XCTAssertEqual(ole.header.miniSectorSize, 64)
     XCTAssertEqual(ole.root.name, "Root Entry")
     XCTAssertEqual(ole.root.streamSize, 1920)
@@ -45,5 +45,22 @@ final class OLEKitTests: XCTestCase {
     )
     XCTAssertEqual(ole.root.children[0].children[0].children[0].streamSize, 112)
     XCTAssertEqual(ole.root.children[0].children[0].children[0].type, .stream)
+  }
+
+  func testDIFAT() throws {
+    let targetFile = URL(fileURLWithPath: #file)
+      .deletingLastPathComponent()
+      .appendingPathComponent("large_strings.xls")
+
+    if !FileManager.default.fileExists(atPath: targetFile.path) {
+      let largeStrings =
+        URL(string: "https://github.com/SheetJS/test_files/raw/master/large_strings.xls")!
+
+      let data = try Data(contentsOf: largeStrings)
+
+      try data.write(to: targetFile)
+    }
+
+    XCTAssertThrowsError(try OLEFile(targetFile.path))
   }
 }

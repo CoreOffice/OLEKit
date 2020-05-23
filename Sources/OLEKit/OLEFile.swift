@@ -24,12 +24,18 @@ public final class OLEFile {
 
   let root: DirectoryEntry
 
-  public init(_ url: URL) throws {
-    let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+  public init(_ path: String) throws {
+    guard FileManager.default.fileExists(atPath: path)
+    else { throw OLEError.fileDoesNotExist(path) }
+
+    let attributes = try FileManager.default.attributesOfItem(atPath: path)
     // swiftlint:disable:next force_cast
     let fileSize = attributes[FileAttributeKey.size] as! Int
 
-    fileHandle = try FileHandle(forReadingFrom: url)
+    guard let fileHandle = FileHandle(forReadingAtPath: path)
+    else { throw OLEError.fileNotAvailableForReading(path: path) }
+
+    self.fileHandle = fileHandle
 
     guard fileSize >= 512
     else { throw OLEError.incompleteHeader }
@@ -37,7 +43,7 @@ public final class OLEFile {
     let data = fileHandle.readData(ofLength: 512)
 
     var stream = DataStream(data)
-    header = try Header(&stream, fileSize: fileSize, url: url)
+    header = try Header(&stream, fileSize: fileSize, path: path)
 
     // The 1st sector of the file contains sector numbers for the first 109
     // FAT sectors, right after the header which is 76 bytes long.
