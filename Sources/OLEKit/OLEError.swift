@@ -16,11 +16,13 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
   case streamTooLarge(actual: Int, expected: Int)
   case incorrectDirectoryEntryColor(actual: UInt8)
   case invalidOLEStreamSectorID(id: UInt32, total: Int)
+  case sectorIndexInDIFATOOB(actual: UInt32, expected: Int)
   case incorrectSectorSize(actual: UInt16, expected: UInt16)
   case directoryEntryIndexOOB(actual: UInt32, expected: Int)
   case incorrectDLLVersion(actual: UInt16, expected: [UInt16])
   case incorrectMiniSectorSize(actual: UInt16, expected: UInt16)
-  case incorrectNumberOfFATSectors(actual: UInt32, expected: Int)
+  case incorrectNumberOfFATSectors(actual: UInt32, expected: UInt32)
+  case incorrectNumberOFDIFATSectors(actual: UInt32, expected: UInt32)
   case incorrectMiniStreamCutoffSize(actual: UInt32, expected: UInt32)
   case incompleteStream(firstSectorID: UInt32, actual: Int, expected: Int)
   case incorrectNumberOfDirectorySectors(actual: UInt32, expected: UInt32)
@@ -55,13 +57,15 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
       return "File is not available for reading at path \(path)"
     case let .invalidOLEStreamSectorID(id, total):
       return "Incorrect OLE FAT, sectorID \(id) is out of total bounds of \(total) sectors"
+    case let .sectorIndexInDIFATOOB(actual, expected):
+      return "Sector index \(actual) is out of bounds, expected to not to exceed \(expected)"
     case let .invalidFATSector(byteOffset):
       return "No sector is available at byte offset \(byteOffset)"
     case let .incompleteStream(sectorID, actual, expected):
       return
         """
         Incomplete OLE stream that starts at sector \(sectorID),
-        expected it to contain at least \(expected) bytes. but its size is \(actual) bytes
+        expected it to contain at least \(expected) bytes, but its size is \(actual) bytes
         """
     case let .streamTooLarge(actual, expected):
       return
@@ -90,6 +94,8 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
         """
     case let .incorrectNumberOfFATSectors(actual, expected):
       return "Incorrect number of FAT sectors, expected at least \(expected), but got \(actual)"
+    case let .incorrectNumberOFDIFATSectors(actual, expected):
+      return "Incorrect number of DIFFAT sectors, expected \(expected), but got \(actual)"
     case let .incorrectMiniSectorSize(actual, expected):
       return
         """

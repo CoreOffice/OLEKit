@@ -57,22 +57,34 @@ struct Header {
   /// Size of the header, which is a sum of sizes of all fields from the spec.
   static let sizeInBytes = 76
 
+  // MARK: 16-bit fields
+
   let minorVersion: UInt16
   let dllVersion: UInt16
   let sectorSize: UInt16
   let miniSectorSize: UInt16
 
-  let numDirectorySectors: UInt32
-  let numFATSectors: UInt32
+  // MARK: 32-bit fields
+
+  let directorySectorsCount: UInt32
+  /// File Allocation Table (FAT) Sector – contains chains of sector indices
+  /// as a FAT does in the FAT/FAT32 filesystems
+  let fatSectorsCount: UInt32
   let firstDirectorySector: UInt32
   let transactionSignatureNumber: UInt32
   let miniStreamCutoffSize: UInt32
-  let firstMiniFATSector: UInt32
-  let numMiniFATSectors: UInt32
-  let firstDIFATSector: UInt32
-  let numDIFATSectors: UInt32
-  let numberOfSectors: Int
 
+  /// MiniFAT Sectors – similar to the FAT but storing chains of mini-sectors within the Mini-Stream
+  let firstMiniFATSector: UInt32
+  let miniFATSectorCount: UInt32
+
+  /// Double-Indirect FAT (DIFAT) Sector – contains chains of FAT sector indices
+  let firstDIFATSector: UInt32
+  let diFATSectorsCount: UInt32
+
+  // MARK: properties with inferred values
+
+  let sectorCount: Int
   let fileSize: Int
 
   init(_ stream: inout DataStream, fileSize: Int, path: String) throws {
@@ -120,12 +132,12 @@ struct Header {
     else { throw OLEError.incorrectHeaderReservedBytes }
 
     // Number of directory sectors (only allowed if DllVersion != 3)
-    numDirectorySectors = stream.read()
-    if dllVersion == 3, numDirectorySectors != 0 {
-      throw OLEError.incorrectNumberOfDirectorySectors(actual: numDirectorySectors, expected: 0)
+    directorySectorsCount = stream.read()
+    if dllVersion == 3, directorySectorsCount != 0 {
+      throw OLEError.incorrectNumberOfDirectorySectors(actual: directorySectorsCount, expected: 0)
     }
 
-    numFATSectors = stream.read()
+    fatSectorsCount = stream.read()
     firstDirectorySector = stream.read()
     transactionSignatureNumber = stream.read()
 
@@ -144,12 +156,12 @@ struct Header {
     }
 
     firstMiniFATSector = stream.read()
-    numMiniFATSectors = stream.read()
+    miniFATSectorCount = stream.read()
     firstDIFATSector = stream.read()
-    numDIFATSectors = stream.read()
+    diFATSectorsCount = stream.read()
 
     // -1 because header's sector doesn't count
-    numberOfSectors = ((fileSize + Int(sectorSize) - 1) / Int(sectorSize)) - 1
+    sectorCount = ((fileSize + Int(sectorSize) - 1) / Int(sectorSize)) - 1
 
     self.fileSize = fileSize
   }

@@ -19,7 +19,7 @@ public final class OLEFile {
   private let fileHandle: FileHandle
   let header: Header
 
-  /// File Allocation Table, also known as: SAT – Sector Allocation Table
+  /// File Allocation Table, also known as SAT – Sector Allocation Table
   private let fat: [UInt32]
 
   let root: DirectoryEntry
