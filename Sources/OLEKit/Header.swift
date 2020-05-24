@@ -73,6 +73,8 @@ struct Header {
   let numDIFATSectors: UInt32
   let numberOfSectors: Int
 
+  let fileSize: Int
+
   init(_ stream: inout DataStream, fileSize: Int, path: String) throws {
     assert(stream.data.count > Self.sizeInBytes)
 
@@ -148,5 +150,7 @@ struct Header {
 
     // -1 because header's sector doesn't count
     numberOfSectors = ((fileSize + Int(sectorSize) - 1) / Int(sectorSize)) - 1
+
+    self.fileSize = fileSize
   }
 }

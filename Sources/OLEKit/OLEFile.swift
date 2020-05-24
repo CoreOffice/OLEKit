@@ -45,41 +45,7 @@ public final class OLEFile {
     var stream = DataStream(data)
     header = try Header(&stream, fileSize: fileSize, path: path)
 
-    // The 1st sector of the file contains sector numbers for the first 109
-    // FAT sectors, right after the header which is 76 bytes long.
-    // (always 109, whatever the sector size: 512 bytes = 76+4*109)
-    // Additional sectors are described by DIF blocks
-    var fat = [UInt32]()
-    for _ in 0..<109 {
-      let sectorIndex: UInt32 = stream.read()
-
-      guard sectorIndex != SectorID.endOfChain.rawValue &&
-        sectorIndex != SectorID.freeSector.rawValue
-      else { break }
-
-      let sectorOffset = UInt64(header.sectorSize) * UInt64(sectorIndex + 1)
-
-      guard sectorOffset < fileSize
-      else { throw OLEError.invalidFATSector(byteOffset: sectorOffset) }
-
-      fileHandle.seek(toFileOffset: sectorOffset)
-      var sectorStream = DataStream(fileHandle.readData(ofLength: Int(header.sectorSize)))
-      for _ in 0..<(header.sectorSize / 4) {
-        fat.append(sectorStream.read())
-      }
-    }
-
-    // Since FAT is read from fixed-size sectors, it may contain more values
-    // than the actual number of sectors in the file.
-    // Keep only the relevant sector indexes:
-    if UInt64(fat.count) > header.numberOfSectors {
-      fat = Array(fat.prefix(header.numberOfSectors))
-    }
-
-    // FIXME: check Double-Indirect File Allocation Table (DIFAT) if file is larger
-    // than 6.8MB
-
-    self.fat = fat
+    fat = try fileHandle.loadFAT(headerStream: &stream, header)
 
     root = try DirectoryEntry(
       rootAt: header.firstDirectorySector,

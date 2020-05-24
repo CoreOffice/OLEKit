@@ -91,4 +91,5 @@ iOSInjectionProject/
 
 .DS_Store
 
+# Downloaded during test runs, too big to be added directly to the repo.
 Tests/OLEKitTests/large_strings.xls

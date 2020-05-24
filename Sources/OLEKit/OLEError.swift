@@ -7,8 +7,8 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
   case invalidEmptyStream
   case bigEndianNotSupported
   case fileIsNotOLE(String)
-  case incorrectHeaderReservedBytes
   case fileDoesNotExist(String)
+  case incorrectHeaderReservedBytes
   case incorrectStorageType(actual: UInt8)
   case invalidFATSector(byteOffset: UInt64)
   case incorrectRootEntry(actual: StorageType)
@@ -20,6 +20,7 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
   case directoryEntryIndexOOB(actual: UInt32, expected: Int)
   case incorrectDLLVersion(actual: UInt16, expected: [UInt16])
   case incorrectMiniSectorSize(actual: UInt16, expected: UInt16)
+  case incorrectNumberOfFATSectors(actual: UInt32, expected: Int)
   case incorrectMiniStreamCutoffSize(actual: UInt32, expected: UInt32)
   case incompleteStream(firstSectorID: UInt32, actual: Int, expected: Int)
   case incorrectNumberOfDirectorySectors(actual: UInt32, expected: UInt32)
@@ -40,8 +41,6 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
       return "Big endian files are not supported"
     case let .fileDoesNotExist(path):
       return "File does not exist at path \(path)"
-    case let .fileNotAvailableForReading(path):
-      return "File is not available for reading at path \(path)"
     case .incorrectHeaderReservedBytes:
       return "Incorrect reserved bytes in the file header, expected those to be zeros"
     case let .incorrectRootEntry(actual):
@@ -52,6 +51,8 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
         """
     case let .incorrectStorageType(actual):
       return "Incorrect OLE storage type \(actual), expected a number in 0...5 range"
+    case let .fileNotAvailableForReading(path):
+      return "File is not available for reading at path \(path)"
     case let .invalidOLEStreamSectorID(id, total):
       return "Incorrect OLE FAT, sectorID \(id) is out of total bounds of \(total) sectors"
     case let .invalidFATSector(byteOffset):
@@ -87,6 +88,8 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
         Incorrect DLL version \(actual) in the file header, \
         expected versions are \(expected)
         """
+    case let .incorrectNumberOfFATSectors(actual, expected):
+      return "Incorrect number of FAT sectors, expected at least \(expected), but got \(actual)"
     case let .incorrectMiniSectorSize(actual, expected):
       return
         """
