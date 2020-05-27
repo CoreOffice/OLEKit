@@ -58,7 +58,7 @@ final class OLEKitTests: XCTestCase {
 
     if !FileManager.default.fileExists(atPath: targetFile.path) {
       let largeStrings =
-        URL(string: "https://github.com/SheetJS/test_files/raw/master/large_strings.xls")!
+        URL(string: "https://raw.githubusercontent.com/SheetJS/test_files/master/large_strings.xls")!
 
       let data = try Data(contentsOf: largeStrings)
 
