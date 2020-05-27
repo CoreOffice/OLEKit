@@ -5,7 +5,7 @@ Swift support for Microsoft OLE2 format, also known as Structured Storage, [Comp
 Some of the file formats that utilize it:
 
 * Encrypted Office Open XML documents (Microsoft Office 2003+, Word `.docx`, Excel `.xlsx`, PowerPoint `.pptx`)
-* Microsoft Office 97-2003 documents (Word `.doc`, Excel `.xls`, PowerPoint `.ppt`, Visio `.vsd`, Project `.mpp`) 
+* Microsoft Office 97-2003 documents ([BIFF5 and later](https://www.gaia-gis.it/gaia-sins/freexl-1.0.5-doxy-doc/html/Format.html) in Word `.doc`, Excel `.xls`, PowerPoint `.ppt`, Visio `.vsd`, Project `.mpp`) 
 * vbaProject.bin in MS Office 2007+ files
 * Image Composer and FlashPix files
 * Outlook messages
