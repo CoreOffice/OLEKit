@@ -12,7 +12,7 @@ extension OLEKitTests {
 }
 
 public func __allTests() -> [XCTestCaseEntry] {
-  return [
+  [
     testCase(OLEKitTests.__allTests__OLEKitTests),
   ]
 }

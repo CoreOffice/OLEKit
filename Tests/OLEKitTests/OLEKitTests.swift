@@ -22,6 +22,7 @@ final class OLEKitTests: XCTestCase {
       .appendingPathComponent("TestWorkbook.xlsx")
 
     let ole = try OLEFile(positiveURL.path)
+
     XCTAssertEqual(ole.header.miniSectorSize, 64)
     XCTAssertEqual(ole.root.name, "Root Entry")
     XCTAssertEqual(ole.root.streamSize, 1920)
@@ -61,6 +62,14 @@ final class OLEKitTests: XCTestCase {
       try data.write(to: targetFile)
     }
 
-    XCTAssertThrowsError(try OLEFile(targetFile.path))
+    let ole = try OLEFile(targetFile.path)
+    XCTAssertEqual(ole.fat.count, 113_759)
+
+    XCTAssertEqual(ole.root.name, "")
+    XCTAssertEqual(ole.root.children.map { $0.name }, ["\u{05}SummaryInformation"])
+    XCTAssertEqual(ole.root.children[0].children.map { $0.name }, [
+      "Workbook",
+      "\u{05}DocumentSummaryInformation",
+    ])
   }
 }

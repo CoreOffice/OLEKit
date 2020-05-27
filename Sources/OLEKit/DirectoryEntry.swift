@@ -24,7 +24,7 @@ private let noStream: UInt32 = 0xFFFF_FFFF
  I: uint32, total stream size in bytes if stream (low 32 bits), 0 otherwise
  I: uint32, total stream size in bytes if stream (high 32 bits), 0 otherwise
  */
-struct DirectoryEntry: Equatable {
+public struct DirectoryEntry: Equatable {
   enum Color: UInt8 {
     case black = 0
     case red = 1
@@ -32,8 +32,8 @@ struct DirectoryEntry: Equatable {
 
   static let sizeInBytes = 128
 
-  let name: String
-  let type: StorageType
+  public let name: String
+  public let type: StorageType
 
   // Directory entries are organised as a
   // [red-black tree](https://en.wikipedia.org/wiki/Red%E2%80%93black_tree)
@@ -41,10 +41,10 @@ struct DirectoryEntry: Equatable {
   let rightIndex: UInt32
   let childIndex: UInt32
 
-  let firstStreamSector: UInt32
-  let streamSize: UInt64
+  public let firstStreamSector: UInt32
+  public let streamSize: UInt64
 
-  let children: [DirectoryEntry]
+  public let children: [DirectoryEntry]
 
   private init?(_ stream: inout DataStream, index: UInt32, sectorSize: UInt16) throws {
     guard index != noStream else { return nil }

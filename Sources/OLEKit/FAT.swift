@@ -25,22 +25,31 @@ enum SectorID: UInt32 {
 private let maxFATSectorsCount: UInt32 = 109
 
 extension FileHandle {
-  func loadSectors(_ header: Header, count: UInt32, firstSector: UInt32) throws -> [UInt32] {
-    var result = [UInt32]()
-    for _ in 0..<count {
-      let sectorIndex: UInt32 = firstSector
+  func loadSector(_ header: Header, index: UInt32) throws -> DataStream {
+    let sectorOffset = UInt64(header.sectorSize) * UInt64(index + 1)
 
-      guard sectorIndex != SectorID.endOfChain.rawValue &&
-        sectorIndex != SectorID.freeSector.rawValue
+    guard sectorOffset < header.fileSize
+    else { throw OLEError.invalidFATSector(byteOffset: sectorOffset) }
+
+    seek(toFileOffset: sectorOffset)
+    return DataStream(readData(ofLength: Int(header.sectorSize)))
+  }
+
+  func loadSectors(
+    _ header: Header,
+    indexStream: inout DataStream,
+    count: UInt32
+  ) throws -> [UInt32] {
+    var result = [UInt32]()
+
+    for _ in 0..<count {
+      let currentIndex: UInt32 = indexStream.read()
+
+      guard currentIndex != SectorID.endOfChain.rawValue &&
+        currentIndex != SectorID.freeSector.rawValue
       else { break }
 
-      let sectorOffset = UInt64(header.sectorSize) * UInt64(sectorIndex + 1)
-
-      guard sectorOffset < header.fileSize
-      else { throw OLEError.invalidFATSector(byteOffset: sectorOffset) }
-
-      seek(toFileOffset: sectorOffset)
-      var sectorStream = DataStream(readData(ofLength: Int(header.sectorSize)))
+      var sectorStream = try loadSector(header, index: currentIndex)
       for _ in 0..<(header.sectorSize / 4) {
         result.append(sectorStream.read())
       }
@@ -50,7 +59,13 @@ extension FileHandle {
   }
 
   func loadFAT(headerStream: inout DataStream, _ header: Header) throws -> [UInt32] {
-    var fat = try loadSectors(header, count: maxFATSectorsCount, firstSector: headerStream.read())
+    var fat = [UInt32]()
+
+    try fat.append(contentsOf: loadSectors(
+      header,
+      indexStream: &headerStream,
+      count: maxFATSectorsCount
+    ))
 
     // Since FAT is read from fixed-size sectors, it may contain more values
     // than the actual number of sectors in the file.
@@ -82,9 +97,10 @@ extension FileHandle {
       // We compute the necessary number of DIFAT sectors :
       // Number of pointers per DIFAT sector = (sectorsize/4)-1
       // (-1 because the last pointer is the next DIFAT sector number)
-      let numSectorPointers = UInt32(header.sectorSize / 4) - 1
+      let sectorPointersCount = UInt32(header.sectorSize / 4) - 1
       // (if 512 bytes: each DIFAT sector = 127 pointers + 1 towards next DIFAT sector)
-      let inferredCount = (header.fatSectorsCount - 109 + numSectorPointers - 1) / numSectorPointers
+      let inferredCount =
+        (header.fatSectorsCount - 109 + sectorPointersCount - 1) / sectorPointersCount
 
       guard header.diFATSectorsCount == inferredCount else {
         throw OLEError.incorrectNumberOFDIFATSectors(
@@ -93,11 +109,17 @@ extension FileHandle {
         )
       }
 
-      try fat.append(contentsOf: loadSectors(
-        header,
-        count: header.diFATSectorsCount,
-        firstSector: header.firstDIFATSector
-      ))
+      var currentSectorID = header.firstDIFATSector
+      for _ in 0..<inferredCount {
+        var difatSectorStream = try loadSector(header, index: currentSectorID)
+        try fat.append(contentsOf: loadSectors(
+          header,
+          indexStream: &difatSectorStream,
+          count: sectorPointersCount
+        ))
+        // last DIFAT pointer is next DIFAT sector
+        currentSectorID = difatSectorStream.read()
+      }
     }
 
     return fat
