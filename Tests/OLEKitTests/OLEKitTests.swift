@@ -63,8 +63,7 @@ final class OLEKitTests: XCTestCase {
     }
 
     let ole = try OLEFile(targetFile.path)
-    XCTAssertEqual(ole.fat.count, 113_759)
-
+    XCTAssertEqual(ole.fat.count, 113_792)
     XCTAssertEqual(ole.root.name, "")
     XCTAssertEqual(ole.root.children.map { $0.name }, ["\u{05}SummaryInformation"])
     XCTAssertEqual(ole.root.children[0].children.map { $0.name }, [
