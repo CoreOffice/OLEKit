@@ -1,19 +1,18 @@
-import Foundation
+// Copyright 2020 CoreOffice contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-func loadDirectory(
-  at sectorID: UInt32,
-  in fileHandle: FileHandle,
-  _ header: Header,
-  fat: [UInt32]
-) throws -> DataStream {
-  try DataStream(
-    fileHandle,
-    sectorID: sectorID,
-    firstSectorOffset: UInt64(header.sectorSize),
-    sectorSize: header.sectorSize,
-    fat: fat
-  )
-}
+import Foundation
 
 public final class OLEFile {
   private let fileHandle: FileHandle
@@ -22,7 +21,7 @@ public final class OLEFile {
   /// File Allocation Table, also known as SAT – Sector Allocation Table
   let fat: [UInt32]
 
-  let root: DirectoryEntry
+  public let root: DirectoryEntry
 
   public init(_ path: String) throws {
     guard FileManager.default.fileExists(atPath: path)
