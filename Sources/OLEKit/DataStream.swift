@@ -41,7 +41,7 @@ public final class DataStream: Reader {
   public func read() -> UInt16 {
     defer { byteOffset += 2 }
 
-    return UInt16(data[byteOffset + 1]) << 8 + UInt16(data[byteOffset])
+    return (UInt16(data[byteOffset + 1]) << 8) + UInt16(data[byteOffset])
   }
 
   /// Read four bytes in little-endian order as a single `UInt32` value and

@@ -72,7 +72,9 @@ final class OLEKitTests: XCTestCase {
 
     let stream = try ole.stream(ole.root.children[0])
     XCTAssertEqual(UInt64(stream.data.count), 1292)
-    XCTAssertEqual([stream.data[0], stream.data[1], stream.data[2], stream.data[3]], [4, 0, 4, 0])
+    let major: UInt16 = stream.read()
+    let minor: UInt16 = stream.read()
+    XCTAssertEqual([major, minor], [4, 4])
   }
 
   func testDIFAT() throws {
