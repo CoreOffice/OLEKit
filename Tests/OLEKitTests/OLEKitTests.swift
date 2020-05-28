@@ -18,6 +18,11 @@ import FoundationNetworking
 @testable import OLEKit
 import XCTest
 
+private let workbookMiniFAT: [UInt32] = [
+  1, 4_294_967_294, 3, 4_294_967_294, 4_294_967_294, 6, 7, 8, 4_294_967_294, 10,
+  11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 4_294_967_294,
+]
+
 final class OLEKitTests: XCTestCase {
   func testIsOLENegative() throws {
     let negativePath = URL(fileURLWithPath: #file).path
@@ -40,6 +45,7 @@ final class OLEKitTests: XCTestCase {
 
     let ole = try OLEFile(positiveURL.path)
 
+    XCTAssertEqual(ole.miniFAT, workbookMiniFAT)
     XCTAssertEqual(ole.header.miniSectorSize, 64)
     XCTAssertEqual(ole.root.name, "Root Entry")
     XCTAssertEqual(ole.root.streamSize, 1920)
@@ -66,6 +72,7 @@ final class OLEKitTests: XCTestCase {
 
     let stream = try ole.stream(ole.root.children[0])
     XCTAssertEqual(UInt64(stream.data.count), 1292)
+    XCTAssertEqual([stream.data[0], stream.data[1], stream.data[2], stream.data[3]], [4, 0, 4, 0])
   }
 
   func testDIFAT() throws {

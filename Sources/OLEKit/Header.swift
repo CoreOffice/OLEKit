@@ -104,10 +104,10 @@ struct Header {
   init(_ stream: inout DataStream, fileSize: Int, path: String) throws {
     assert(stream.data.count > Self.sizeInBytes)
 
-    guard stream.read(count: magic.count) == magic else { throw OLEError.fileIsNotOLE(path) }
+    guard stream.readData(ofLength: magic.count) == magic else { throw OLEError.fileIsNotOLE(path) }
 
     // according to AAF specs, CLSID should always be zero
-    guard stream.read(count: 16) == Data(repeating: 0, count: 16) else {
+    guard stream.readData(ofLength: 16) == Data(repeating: 0, count: 16) else {
       throw OLEError.incorrectCLSID
     }
 

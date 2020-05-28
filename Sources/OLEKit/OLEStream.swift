@@ -14,7 +14,7 @@
 
 import Foundation
 
-extension FileHandle {
+extension Reader {
   func oleStream(
     sectorID: UInt32,
     expectedStreamSize: UInt64? = nil,
@@ -54,15 +54,13 @@ extension FileHandle {
       guard currentSectorID >= 0 && UInt64(currentSectorID) < fat.count
       else { throw OLEError.invalidOLEStreamSectorID(id: currentSectorID, total: fat.count) }
 
-      seek(
-        toFileOffset: firstSectorOffset + UInt64(sectorSize) * UInt64(currentSectorID)
-      )
+      seek(toOffset: firstSectorOffset + UInt64(sectorSize) * UInt64(currentSectorID))
 
       // if sector is the last of the file, sometimes it is not a
       // complete sector (of 512 or 4K), so we may read less than
       // sectorsize.
       if sectorID == fat.count - 1 {
-        data.append(readDataToEndOfFile())
+        data.append(readDataToEnd())
       } else {
         data.append(readData(ofLength: Int(sectorSize)))
       }

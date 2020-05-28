@@ -25,8 +25,8 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
   case incorrectHeaderReservedBytes
   case incorrectStorageType(actual: UInt8)
   case invalidFATSector(byteOffset: UInt64)
-  case miniStreamIsNotSupported(name: String)
   case incorrectRootEntry(actual: StorageType)
+  case directoryEntryIsNotAStream(name: String)
   case fileNotAvailableForReading(path: String)
   case incorrectDirectoryEntryColor(actual: UInt8)
   case streamTooLarge(actual: UInt64, expected: Int)
@@ -68,8 +68,8 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
         """
     case let .incorrectStorageType(actual):
       return "Incorrect OLE storage type \(actual), expected a number in 0...5 range"
-    case let .miniStreamIsNotSupported(name):
-      return "Mini streams are not supported, attempted to open stream with name \(name)"
+    case let .directoryEntryIsNotAStream(name):
+      return #"Directory entry with name "\#(name)" is not of stream type"#
     case let .fileNotAvailableForReading(path):
       return "File is not available for reading at path \(path)"
     case let .invalidOLEStreamSectorID(id, total):

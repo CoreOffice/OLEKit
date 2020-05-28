@@ -64,7 +64,7 @@ extension FileHandle {
         currentIndex != SectorID.freeSector.rawValue
       else { break }
 
-      var sectorStream = try loadSector(header, index: currentIndex)
+      let sectorStream = try loadSector(header, index: currentIndex)
       for _ in 0..<(header.sectorSize / 4) {
         result.append(sectorStream.read())
       }
@@ -155,7 +155,7 @@ extension FileHandle {
     let miniSectorsCount = (root.streamSize + UInt64(header.miniSectorSize) - 1) /
       UInt64(header.miniSectorSize)
 
-    var stream = try oleStream(
+    let stream = try oleStream(
       sectorID: header.firstMiniFATSector,
       expectedStreamSize: streamSize,
       firstSectorOffset: UInt64(header.sectorSize),

@@ -15,13 +15,17 @@
 import Foundation
 
 public final class OLEFile {
-  private let fileHandle: FileHandle
+  private var fileHandle: FileHandle
   let header: Header
 
   /// File Allocation Table, also known as SAT – Sector Allocation Table
   let fat: [UInt32]
 
   let miniFAT: [UInt32]
+
+  // Can't be `lazy var` because Swift doesn't support throwing properties, and we need
+  // to handle (or rethrow) potential errors from `DataStream.init`.
+  private var miniStream: DataStream?
 
   public let root: DirectoryEntry
 
@@ -58,21 +62,37 @@ public final class OLEFile {
     miniFAT = try fileHandle.loadMiniFAT(header, root: root, fat: fat)
   }
 
+  /// Return an instance of `DataStream` that contains a given stream entry
   public func stream(_ entry: DirectoryEntry) throws -> DataStream {
-    let offset: UInt64
-    let fat: [UInt32]
-    if entry.streamSize < header.miniStreamCutoffSize {
-      offset = 0
-      fat = self.fat
-    } else {
-      offset = UInt64(header.sectorSize)
-      fat = miniFAT
-    }
+    guard entry.type == .stream
+    else { throw OLEError.directoryEntryIsNotAStream(name: entry.name) }
 
-    return try fileHandle.oleStream(
+    if entry.streamSize < header.miniStreamCutoffSize {
+      let miniStream = try self.miniStream ?? streamForceFAT(root)
+
+      // cache miniStream
+      if self.miniStream == nil {
+        self.miniStream = miniStream
+      }
+
+      return try miniStream.oleStream(
+        sectorID: entry.firstStreamSector,
+        expectedStreamSize: entry.streamSize,
+        firstSectorOffset: 0,
+        sectorSize: header.miniSectorSize,
+        fat: miniFAT
+      )
+    } else {
+      return try streamForceFAT(entry)
+    }
+  }
+
+  /// Always loads data according to FAT ignoring `miniStream` and `miniFAT`
+  func streamForceFAT(_ entry: DirectoryEntry) throws -> DataStream {
+    try fileHandle.oleStream(
       sectorID: entry.firstStreamSector,
       expectedStreamSize: entry.streamSize,
-      firstSectorOffset: offset,
+      firstSectorOffset: UInt64(header.sectorSize),
       sectorSize: header.sectorSize,
       fat: fat
     )
