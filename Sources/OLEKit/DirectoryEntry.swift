@@ -133,8 +133,7 @@ public struct DirectoryEntry: Equatable {
     _ header: Header,
     fat: [UInt32]
   ) throws {
-    var stream = try DataStream(
-      fileHandle,
+    var stream = try fileHandle.oleStream(
       sectorID: sectorID,
       firstSectorOffset: UInt64(header.sectorSize),
       sectorSize: header.sectorSize,

@@ -14,20 +14,19 @@
 
 import Foundation
 
-extension DataStream {
-  init(
-    _ fileHandle: FileHandle,
+extension FileHandle {
+  func oleStream(
     sectorID: UInt32,
-    expectedStreamSize: Int? = nil,
+    expectedStreamSize: UInt64? = nil,
     firstSectorOffset: UInt64,
     sectorSize: UInt16,
     fat: [UInt32]
-  ) throws {
+  ) throws -> DataStream {
     guard !(expectedStreamSize == 0 && sectorID == SectorID.endOfChain.rawValue)
     else { throw OLEError.invalidEmptyStream }
 
-    let sectorSize = Int(sectorSize)
-    let calculatedStreamSize = expectedStreamSize ?? fat.count * Int(sectorSize)
+    let sectorSize = UInt64(sectorSize)
+    let calculatedStreamSize = expectedStreamSize ?? UInt64(fat.count) * UInt64(sectorSize)
     let numberOfSectors = (calculatedStreamSize + sectorSize - 1) / sectorSize
 
     // This number should (at least) be less than the total number of
@@ -55,7 +54,7 @@ extension DataStream {
       guard currentSectorID >= 0 && UInt64(currentSectorID) < fat.count
       else { throw OLEError.invalidOLEStreamSectorID(id: currentSectorID, total: fat.count) }
 
-      fileHandle.seek(
+      seek(
         toFileOffset: firstSectorOffset + UInt64(sectorSize) * UInt64(currentSectorID)
       )
 
@@ -63,9 +62,9 @@ extension DataStream {
       // complete sector (of 512 or 4K), so we may read less than
       // sectorsize.
       if sectorID == fat.count - 1 {
-        data.append(fileHandle.readDataToEndOfFile())
+        data.append(readDataToEndOfFile())
       } else {
-        data.append(fileHandle.readData(ofLength: Int(sectorSize)))
+        data.append(readData(ofLength: Int(sectorSize)))
       }
 
       currentSectorID = fat[Int(currentSectorID)]
@@ -73,7 +72,7 @@ extension DataStream {
 
     if data.count > calculatedStreamSize {
       // `data` is truncated to the expected stream size
-      data = data.prefix(calculatedStreamSize)
+      data = data.prefix(Int(calculatedStreamSize))
     } else if let expectedStreamSize = expectedStreamSize, data.count < expectedStreamSize {
       // the stream size was not inferred, but was smaller than expected
       throw OLEError.incompleteStream(
@@ -83,6 +82,6 @@ extension DataStream {
       )
     }
 
-    self.data = data
+    return DataStream(data)
   }
 }

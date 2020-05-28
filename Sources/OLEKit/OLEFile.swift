@@ -21,6 +21,8 @@ public final class OLEFile {
   /// File Allocation Table, also known as SAT – Sector Allocation Table
   let fat: [UInt32]
 
+  let miniFAT: [UInt32]
+
   public let root: DirectoryEntry
 
   public init(_ path: String) throws {
@@ -50,6 +52,28 @@ public final class OLEFile {
       rootAt: header.firstDirectorySector,
       in: fileHandle,
       header,
+      fat: fat
+    )
+
+    miniFAT = try fileHandle.loadMiniFAT(header, root: root, fat: fat)
+  }
+
+  public func stream(_ entry: DirectoryEntry) throws -> DataStream {
+    let offset: UInt64
+    let fat: [UInt32]
+    if entry.streamSize < header.miniStreamCutoffSize {
+      offset = 0
+      fat = self.fat
+    } else {
+      offset = UInt64(header.sectorSize)
+      fat = miniFAT
+    }
+
+    return try fileHandle.oleStream(
+      sectorID: entry.firstStreamSector,
+      expectedStreamSize: entry.streamSize,
+      firstSectorOffset: offset,
+      sectorSize: header.sectorSize,
       fat: fat
     )
   }

@@ -14,27 +14,35 @@
 
 import Foundation
 
-struct DataStream {
+/// A stateful stream that allows reading raw in-memory data in little-endian mode.
+public struct DataStream {
   let data: Data
-  var byteOffset = 0
+
+  /// Current byte offset within the stream.
+  public var byteOffset = 0
 
   init(_ data: Data) {
     self.data = data
   }
 
-  mutating func read() -> UInt8 {
+  /// Read a single byte from the stream and increment `byteOffset` by 1.
+  public mutating func read() -> UInt8 {
     defer { byteOffset += 1 }
 
     return data[byteOffset]
   }
 
-  mutating func read() -> UInt16 {
+  /// Read two bytes in little-endian order as a single `UInt16` value and
+  /// increment `byteOffset` by 2.
+  public mutating func read() -> UInt16 {
     defer { byteOffset += 2 }
 
     return UInt16(data[byteOffset + 1]) << 8 + UInt16(data[byteOffset])
   }
 
-  mutating func read() -> UInt32 {
+  /// Read four bytes in little-endian order as a single `UInt32` value and
+  /// increment `byteOffset` by 4.
+  public mutating func read() -> UInt32 {
     defer { byteOffset += 4 }
 
     return (UInt32(data[byteOffset + 3]) << 24)
@@ -43,7 +51,8 @@ struct DataStream {
       + UInt32(data[byteOffset])
   }
 
-  mutating func read(count: Int) -> Data {
+  /// Read a given `count` of bytes as raw data and increment `byteOffset` by `count`.
+  public mutating func read(count: Int) -> Data {
     defer { byteOffset += count }
 
     return data[byteOffset..<byteOffset + count]

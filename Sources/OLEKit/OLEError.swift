@@ -25,10 +25,11 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
   case incorrectHeaderReservedBytes
   case incorrectStorageType(actual: UInt8)
   case invalidFATSector(byteOffset: UInt64)
+  case miniStreamIsNotSupported(name: String)
   case incorrectRootEntry(actual: StorageType)
   case fileNotAvailableForReading(path: String)
-  case streamTooLarge(actual: Int, expected: Int)
   case incorrectDirectoryEntryColor(actual: UInt8)
+  case streamTooLarge(actual: UInt64, expected: Int)
   case invalidOLEStreamSectorID(id: UInt32, total: Int)
   case sectorIndexInDIFATOOB(actual: UInt32, expected: Int)
   case incorrectSectorSize(actual: UInt16, expected: UInt16)
@@ -38,7 +39,7 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
   case incorrectNumberOfFATSectors(actual: UInt32, expected: UInt32)
   case incorrectNumberOFDIFATSectors(actual: UInt32, expected: UInt32)
   case incorrectMiniStreamCutoffSize(actual: UInt32, expected: UInt32)
-  case incompleteStream(firstSectorID: UInt32, actual: Int, expected: Int)
+  case incompleteStream(firstSectorID: UInt32, actual: Int, expected: UInt64)
   case incorrectNumberOfDirectorySectors(actual: UInt32, expected: UInt32)
 
   public var description: String {
@@ -67,6 +68,8 @@ public enum OLEError: Error, Equatable, CustomStringConvertible {
         """
     case let .incorrectStorageType(actual):
       return "Incorrect OLE storage type \(actual), expected a number in 0...5 range"
+    case let .miniStreamIsNotSupported(name):
+      return "Mini streams are not supported, attempted to open stream with name \(name)"
     case let .fileNotAvailableForReading(path):
       return "File is not available for reading at path \(path)"
     case let .invalidOLEStreamSectorID(id, total):

@@ -63,6 +63,9 @@ final class OLEKitTests: XCTestCase {
     )
     XCTAssertEqual(ole.root.children[0].children[0].children[0].streamSize, 112)
     XCTAssertEqual(ole.root.children[0].children[0].children[0].type, .stream)
+
+    let stream = try ole.stream(ole.root.children[0])
+    XCTAssertEqual(UInt64(stream.data.count), 1292)
   }
 
   func testDIFAT() throws {

@@ -55,6 +55,7 @@ extension FileHandle {
     count: UInt32
   ) throws -> [UInt32] {
     var result = [UInt32]()
+    result.reserveCapacity(Int(count))
 
     for _ in 0..<count {
       let currentIndex: UInt32 = indexStream.read()
@@ -84,8 +85,8 @@ extension FileHandle {
     // Since FAT is read from fixed-size sectors, it may contain more values
     // than the actual number of sectors in the file.
     // Keep only the relevant sector indexes:
-    if UInt64(fat.count) > header.sectorCount {
-      fat = Array(fat.prefix(header.sectorCount))
+    if UInt64(fat.count) > header.sectorsCount {
+      fat = Array(fat.prefix(header.sectorsCount))
     }
 
     if header.diFATSectorsCount > 0 {
@@ -101,10 +102,10 @@ extension FileHandle {
         )
       }
 
-      guard header.firstDIFATSector < UInt(header.sectorCount) else {
+      guard header.firstDIFATSector < UInt(header.sectorsCount) else {
         throw OLEError.sectorIndexInDIFATOOB(
           actual: header.firstDIFATSector,
-          expected: header.sectorCount
+          expected: header.sectorsCount
         )
       }
 
@@ -137,5 +138,37 @@ extension FileHandle {
     }
 
     return fat
+  }
+
+  func loadMiniFAT(_ header: Header, root: DirectoryEntry, fat: [UInt32]) throws -> [UInt32] {
+    // MiniFAT is stored in a standard  sub-stream, pointed to by a header
+    // field.
+    // NOTE: there are two sizes to take into account for this stream:
+    // 1) Stream size is calculated according to the number of sectors
+    //    declared in the OLE header. This allocated stream may be more than
+    //    needed to store the actual sector indexes.
+    //  2) Actually used size is calculated by dividing the MiniStream size
+    //    (given by root entry size) by the size of mini sectors, *4 for
+    //    32 bits indexes:
+
+    let streamSize = UInt64(header.miniFATSectorsCount) * UInt64(header.sectorSize)
+    let miniSectorsCount = (root.streamSize + UInt64(header.miniSectorSize) - 1) /
+      UInt64(header.miniSectorSize)
+
+    var stream = try oleStream(
+      sectorID: header.firstMiniFATSector,
+      expectedStreamSize: streamSize,
+      firstSectorOffset: UInt64(header.sectorSize),
+      sectorSize: header.sectorSize,
+      fat: fat
+    )
+
+    var result = [UInt32]()
+    result.reserveCapacity(Int(miniSectorsCount))
+    for _ in 0..<miniSectorsCount {
+      result.append(stream.read())
+    }
+
+    return result
   }
 }

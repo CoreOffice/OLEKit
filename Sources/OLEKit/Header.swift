@@ -90,7 +90,7 @@ struct Header {
 
   /// MiniFAT Sectors – similar to the FAT but storing chains of mini-sectors within the Mini-Stream
   let firstMiniFATSector: UInt32
-  let miniFATSectorCount: UInt32
+  let miniFATSectorsCount: UInt32
 
   /// Double-Indirect FAT (DIFAT) Sector – contains chains of FAT sector indices
   let firstDIFATSector: UInt32
@@ -98,7 +98,7 @@ struct Header {
 
   // MARK: properties with inferred values
 
-  let sectorCount: Int
+  let sectorsCount: Int
   let fileSize: Int
 
   init(_ stream: inout DataStream, fileSize: Int, path: String) throws {
@@ -170,12 +170,12 @@ struct Header {
     }
 
     firstMiniFATSector = stream.read()
-    miniFATSectorCount = stream.read()
+    miniFATSectorsCount = stream.read()
     firstDIFATSector = stream.read()
     diFATSectorsCount = stream.read()
 
     // -1 because header's sector doesn't count
-    sectorCount = ((fileSize + Int(sectorSize) - 1) / Int(sectorSize)) - 1
+    sectorsCount = ((fileSize + Int(sectorSize) - 1) / Int(sectorSize)) - 1
 
     self.fileSize = fileSize
   }
