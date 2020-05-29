@@ -25,7 +25,7 @@ public final class DataStream: Reader {
     self.data = data
   }
 
-  func seek(toOffset offset: UInt64) {
+  public func seek(toOffset offset: UInt64) {
     byteOffset = Int(offset)
   }
 
