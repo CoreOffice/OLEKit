@@ -17,6 +17,8 @@ import Foundation
 public final class DataWriter {
   public private(set) var data = Data()
 
+  public init() {}
+
   // Write four bytes in little-endian order to this stream
   public func write(_ value: UInt32) {
     var value = value.littleEndian
