@@ -39,19 +39,19 @@ enum SectorID: UInt32 {
 private let maxFATSectorsCount: UInt32 = 109
 
 extension FileHandle {
-  func loadSector(_ header: Header, index: UInt32) throws -> DataStream {
+  func loadSector(_ header: Header, index: UInt32) throws -> DataReader {
     let sectorOffset = UInt64(header.sectorSize) * UInt64(index + 1)
 
     guard sectorOffset < header.fileSize
     else { throw OLEError.invalidFATSector(byteOffset: sectorOffset) }
 
     seek(toFileOffset: sectorOffset)
-    return DataStream(readData(ofLength: Int(header.sectorSize)))
+    return DataReader(readData(ofLength: Int(header.sectorSize)))
   }
 
   func loadSectors(
     _ header: Header,
-    indexStream: inout DataStream,
+    indexStream: inout DataReader,
     count: UInt32
   ) throws -> [UInt32] {
     var result = [UInt32]()
@@ -73,7 +73,7 @@ extension FileHandle {
     return result
   }
 
-  func loadFAT(headerStream: inout DataStream, _ header: Header) throws -> [UInt32] {
+  func loadFAT(headerStream: inout DataReader, _ header: Header) throws -> [UInt32] {
     var fat = [UInt32]()
 
     try fat.append(contentsOf: loadSectors(

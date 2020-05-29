@@ -21,7 +21,7 @@ extension Reader {
     firstSectorOffset: UInt64,
     sectorSize: UInt16,
     fat: [UInt32]
-  ) throws -> DataStream {
+  ) throws -> DataReader {
     guard !(expectedStreamSize == 0 && sectorID == SectorID.endOfChain.rawValue)
     else { throw OLEError.invalidEmptyStream }
 
@@ -80,6 +80,6 @@ extension Reader {
       )
     }
 
-    return DataStream(data)
+    return DataReader(data)
   }
 }

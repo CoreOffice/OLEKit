@@ -101,7 +101,7 @@ struct Header {
   let sectorsCount: Int
   let fileSize: Int
 
-  init(_ stream: inout DataStream, fileSize: Int, path: String) throws {
+  init(_ stream: inout DataReader, fileSize: Int, path: String) throws {
     assert(stream.data.count > Self.sizeInBytes)
 
     guard stream.readData(ofLength: magic.count) == magic else { throw OLEError.fileIsNotOLE(path) }

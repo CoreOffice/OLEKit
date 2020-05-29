@@ -14,8 +14,18 @@
 
 import Foundation
 
+public final class DataWriter {
+  public private(set) var data = Data()
+
+  // Write four bytes in little-endian order to this stream
+  public func write(_ value: UInt32) {
+    var value = value.littleEndian
+    data.append(contentsOf: withUnsafeBytes(of: &value) { Array($0) })
+  }
+}
+
 /// A stateful stream that allows reading raw in-memory data in little-endian mode.
-public final class DataStream: Reader {
+public final class DataReader: Reader {
   let data: Data
 
   /// Current byte offset within the stream.

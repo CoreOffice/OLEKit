@@ -60,7 +60,7 @@ public struct DirectoryEntry: Equatable {
 
   public let children: [DirectoryEntry]
 
-  private init?(_ stream: inout DataStream, index: UInt32, sectorSize: UInt16) throws {
+  private init?(_ stream: inout DataReader, index: UInt32, sectorSize: UInt16) throws {
     guard index != noStream else { return nil }
 
     stream.byteOffset = Int(index) * Self.sizeInBytes

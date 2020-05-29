@@ -24,8 +24,8 @@ public final class OLEFile {
   let miniFAT: [UInt32]
 
   // Can't be `lazy var` because Swift doesn't support throwing properties, and we need
-  // to handle (or rethrow) potential errors from `DataStream.init`.
-  private var miniStream: DataStream?
+  // to handle (or rethrow) potential errors from `DataReader.init`.
+  private var miniStream: DataReader?
 
   public let root: DirectoryEntry
 
@@ -47,7 +47,7 @@ public final class OLEFile {
 
     let data = fileHandle.readData(ofLength: 512)
 
-    var stream = DataStream(data)
+    var stream = DataReader(data)
     header = try Header(&stream, fileSize: fileSize, path: path)
 
     fat = try fileHandle.loadFAT(headerStream: &stream, header)
@@ -62,8 +62,8 @@ public final class OLEFile {
     miniFAT = try fileHandle.loadMiniFAT(header, root: root, fat: fat)
   }
 
-  /// Return an instance of `DataStream` that contains a given stream entry
-  public func stream(_ entry: DirectoryEntry) throws -> DataStream {
+  /// Return an instance of `DataReader` that contains a given stream entry
+  public func stream(_ entry: DirectoryEntry) throws -> DataReader {
     guard entry.type == .stream
     else { throw OLEError.directoryEntryIsNotAStream(name: entry.name) }
 
@@ -88,7 +88,7 @@ public final class OLEFile {
   }
 
   /// Always loads data according to FAT ignoring `miniStream` and `miniFAT`
-  func streamForceFAT(_ entry: DirectoryEntry) throws -> DataStream {
+  func streamForceFAT(_ entry: DirectoryEntry) throws -> DataReader {
     try fileHandle.oleStream(
       sectorID: entry.firstStreamSector,
       expectedStreamSize: entry.streamSize,

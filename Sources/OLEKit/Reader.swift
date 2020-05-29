@@ -1,6 +1,6 @@
 import Foundation
 
-/// Helper protocol that presents a unified interface for both `FileHandle` and `DataStream`.
+/// Helper protocol that presents a unified interface for both `FileHandle` and `DataReader`.
 protocol Reader: AnyObject {
   func seek(toOffset: UInt64)
   func readData(ofLength: Int) -> Data
