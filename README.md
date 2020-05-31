@@ -22,12 +22,12 @@ An OLE2 file has [a minuature filesystem embedded in
 it](https://en.wikipedia.org/wiki/Compound_File_Binary_Format#Structure) that is
 represented as a tree of `DirectoryEntry` values in OLEKit.
 
-To read a file and a entry within the file:
+To read a file and an entry within the file:
 
-1. Add `import OLEKit` at the top of a relevant file.
-2. Use `OLEFile(_ path: String)` to create a new instance with a path to your file.
+1. Add `import OLEKit` at the top of a relevant source file.
+2. Use `OLEFile(_ path: String)` to create a new instance with a path to your OLE2 file.
 3. Use the `root` property of type `DirectoryEntry` on `OLEFile` to read the root
-   directory entry and `children` property on `DirectoryEntry` to traverse the tree of
+   directory entry, and `children` property on `DirectoryEntry` to traverse the tree of
    entries.
 4. Call `stream(_ entry:)` on your `OLEFile` instance to get access to the entry.
    This returns an instance of `DataReader` that provides helper `read()` functions
