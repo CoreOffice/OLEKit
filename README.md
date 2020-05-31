@@ -20,7 +20,9 @@ Some of the file formats that utilize it:
 
 An OLE2 file has [a minuature filesystem embedded in
 it](https://en.wikipedia.org/wiki/Compound_File_Binary_Format#Structure) that is
-represented as a tree of `DirectoryEntry` values in OLEKit.
+represented as a tree of
+[`DirectoryEntry`](https://github.com/CoreOffice/OLEKit/blob/master/Sources/OLEKit/DirectoryEntry.swift)
+values in OLEKit.
 
 To read a file and an entry within the file:
 
