@@ -37,12 +37,19 @@ public final class DataReader: Reader {
     self.data = data
   }
 
-  public func seek(toOffset offset: UInt64) {
-    byteOffset = Int(offset)
+  public var totalBytes: Int {
+    data.count
+  }
+
+  public func seek(toOffset offset: Int) {
+    precondition(offset < data.count)
+
+    byteOffset = offset
   }
 
   /// Read a single byte from the stream and increment `byteOffset` by 1.
   public func read() -> UInt8 {
+    precondition(byteOffset + 1 <= data.count)
     defer { byteOffset += 1 }
 
     return data[byteOffset]
@@ -51,6 +58,7 @@ public final class DataReader: Reader {
   /// Read two bytes in little-endian order as a single `UInt16` value and
   /// increment `byteOffset` by 2.
   public func read() -> UInt16 {
+    precondition(byteOffset + 2 <= data.count)
     defer { byteOffset += 2 }
 
     return (UInt16(data[byteOffset + 1]) << 8) + UInt16(data[byteOffset])
@@ -59,6 +67,7 @@ public final class DataReader: Reader {
   /// Read four bytes in little-endian order as a single `UInt32` value and
   /// increment `byteOffset` by 4.
   public func read() -> UInt32 {
+    precondition(byteOffset + 4 <= data.count)
     defer { byteOffset += 4 }
 
     return (UInt32(data[byteOffset + 3]) << 24)
@@ -69,12 +78,15 @@ public final class DataReader: Reader {
 
   /// Read a given `count` of bytes as raw data and increment `byteOffset` by `count`.
   public func readData(ofLength length: Int) -> Data {
+    precondition(byteOffset + length <= data.count)
     defer { byteOffset += length }
 
     return data[byteOffset..<byteOffset + length]
   }
 
   public func readDataToEnd() -> Data {
+    guard data.count > 0 else { return data }
+
     defer { byteOffset = data.count - 1 }
 
     return data[byteOffset..<data.count]

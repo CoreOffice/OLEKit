@@ -54,7 +54,7 @@ extension Reader {
       guard currentSectorID >= 0 && UInt64(currentSectorID) < fat.count
       else { throw OLEError.invalidOLEStreamSectorID(id: currentSectorID, total: fat.count) }
 
-      seek(toOffset: firstSectorOffset + UInt64(sectorSize) * UInt64(currentSectorID))
+      seek(toOffset: Int(firstSectorOffset) + Int(sectorSize) * Int(currentSectorID))
 
       // if sector is the last of the file, sometimes it is not a
       // complete sector (of 512 or 4K), so we may read less than
