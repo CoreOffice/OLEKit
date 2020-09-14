@@ -17,6 +17,8 @@ Some of the file formats that utilize it:
 
 ...and more. If you know of a file format that is based on CFBF, please submit [a pull request](https://github.com/MaxDesiatov/OLEKit/edit/master/README.md) so that it's added to the list.
 
+Automatically generated documentation is available on [our GitHub Pages](https://coreoffice.github.io/OLEKit/).
+
 ## Example
 
 An OLE2 file has [a minuature filesystem embedded in
