@@ -16,10 +16,7 @@ import Foundation
 
 private let noStream: UInt32 = 0xFFFF_FFFF
 
-/**
- OLE2 Directory Entry pointing to a stream or a storage
-
- ```
+/*
  struct to parse directory entries: '<64sHBBIII16sIQQIII'
  <: little-endian byte order, standard sizes
    (note: this should guarantee that Q returns a 64 bits int)
@@ -35,10 +32,12 @@ private let noStream: UInt32 = 0xFFFF_FFFF
  Q (was 8s): uint64, creation timestamp or zero
  Q (was 8s): uint64, modification timestamp or zero
  I: uint32, SID of first sector if stream or ministream, SID of 1st sector
-    of stream containing ministreams if root entry, 0 otherwise
+   of stream containing ministreams if root entry, 0 otherwise
  I: uint32, total stream size in bytes if stream (low 32 bits), 0 otherwise
  I: uint32, total stream size in bytes if stream (high 32 bits), 0 otherwise
- ```
+ */
+/**
+ OLE2 Directory Entry pointing to a stream or a storage.
  */
 public struct DirectoryEntry: Equatable {
   enum Color: UInt8 {
