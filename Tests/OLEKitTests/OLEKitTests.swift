@@ -100,4 +100,16 @@ final class OLEKitTests: XCTestCase {
       "\u{05}DocumentSummaryInformation",
     ])
   }
+
+  func testHWP() throws {
+    let url = URL(fileURLWithPath: #file)
+      .deletingLastPathComponent()
+      .appendingPathComponent("blank.hwp")
+    let ole = try OLEFile(url.path)
+    let fileHeaderStream = ole.root.children.first(where: { $0.name == "FileHeader" })!
+    let reader = try ole.stream(fileHeaderStream)
+    let data = reader.readData(ofLength: 32)
+    let signature = String(data: data, encoding: .ascii)
+    XCTAssertEqual(signature, "HWP Document File\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
+  }
 }

@@ -59,7 +59,7 @@ extension Reader {
       // if sector is the last of the file, sometimes it is not a
       // complete sector (of 512 or 4K), so we may read less than
       // sectorsize.
-      if sectorID == fat.count - 1 {
+      if currentSectorID == fat.count - 1 {
         data.append(readDataToEnd())
       } else {
         data.append(readData(ofLength: Int(sectorSize)))
