@@ -50,27 +50,27 @@ final class OLEKitTests: XCTestCase {
     XCTAssertEqual(ole.root.name, "Root Entry")
     XCTAssertEqual(ole.root.streamSize, 1920)
     XCTAssertEqual(ole.root.type, .root)
-    XCTAssertEqual(ole.root.children.map { $0.name }, ["EncryptionInfo"])
-    XCTAssertEqual(ole.root.children[0].streamSize, 1292)
-    XCTAssertEqual(ole.root.children[0].type, .stream)
+    XCTAssertEqual(
+      ole.root.children.map { $0.name },
+      ["\u{06}DataSpaces", "EncryptedPackage", "EncryptionInfo"]
+    )
+    XCTAssertEqual(ole.root.children[2].streamSize, 1292)
+    XCTAssertEqual(ole.root.children[2].type, .stream)
     XCTAssertEqual(
       ole.root.children[0].children.map { $0.name },
-      ["\u{06}DataSpaces", "EncryptedPackage"]
+      ["Version", "TransformInfo", "DataSpaceInfo", "DataSpaceMap"]
     )
-    XCTAssertEqual(ole.root.children[0].children[0].streamSize, 0)
-    XCTAssertEqual(ole.root.children[0].children[0].type, .storage)
-    XCTAssertEqual(ole.root.children[0].children[0].children.map { $0.name }, ["DataSpaceMap"])
-    XCTAssertEqual(ole.root.children[0].children[1].streamSize, 8216)
-    XCTAssertEqual(ole.root.children[0].children[1].type, .stream)
-    XCTAssertEqual(ole.root.children[0].children[1].children.map { $0.name }, [])
+    XCTAssertEqual(ole.root.children[0].children[0].streamSize, 76)
+    XCTAssertEqual(ole.root.children[0].children[0].type, .stream)
+    XCTAssertEqual(ole.root.children[0].children[0].children.map { $0.name }, [])
+    XCTAssertEqual(ole.root.children[0].children[1].streamSize, 0)
+    XCTAssertEqual(ole.root.children[0].children[1].type, .storage)
     XCTAssertEqual(
-      ole.root.children[0].children[0].children[0].children.map { $0.name },
-      ["Version", "DataSpaceInfo"]
+      ole.root.children[0].children[1].children.map { $0.name },
+      ["StrongEncryptionTransform"]
     )
-    XCTAssertEqual(ole.root.children[0].children[0].children[0].streamSize, 112)
-    XCTAssertEqual(ole.root.children[0].children[0].children[0].type, .stream)
 
-    let stream = try ole.stream(ole.root.children[0])
+    let stream = try ole.stream(ole.root.children[2])
     XCTAssertEqual(UInt64(stream.data.count), 1292)
     let major: UInt16 = stream.read()
     let minor: UInt16 = stream.read()
@@ -94,11 +94,16 @@ final class OLEKitTests: XCTestCase {
     let ole = try OLEFile(targetFile.path)
     XCTAssertEqual(ole.fat.count, 113_792)
     XCTAssertEqual(ole.root.name, "")
-    XCTAssertEqual(ole.root.children.map { $0.name }, ["\u{05}SummaryInformation"])
-    XCTAssertEqual(ole.root.children[0].children.map { $0.name }, [
+    XCTAssertEqual(ole.root.children.map { $0.name }, [
+      "\u{01}CompObj",
       "Workbook",
       "\u{05}DocumentSummaryInformation",
+      "\u{05}SummaryInformation",
     ])
+    XCTAssertEqual(ole.root.children[0].children.map { $0.name }, [])
+    XCTAssertEqual(ole.root.children[1].children.map { $0.name }, [])
+    XCTAssertEqual(ole.root.children[2].children.map { $0.name }, [])
+    XCTAssertEqual(ole.root.children[3].children.map { $0.name }, [])
   }
 
   func testHWP() throws {
@@ -111,5 +116,16 @@ final class OLEKitTests: XCTestCase {
     let data = reader.readData(ofLength: 32)
     let signature = String(data: data, encoding: .ascii)
     XCTAssertEqual(signature, "HWP Document File\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
+    XCTAssertEqual(ole.root.children.map { $0.name }, [
+      "BinData",
+      "Scripts",
+      "PrvText",
+      "DocInfo",
+      "DocOptions",
+      "PrvImage",
+      "BodyText",
+      "\u{05}HwpSummaryInformation",
+      "FileHeader",
+    ])
   }
 }

@@ -87,6 +87,15 @@ jobs:
       - name: Test with Xcode 11.7
         run: ./xcode_test.sh Xcode_11.7
 
+  xcode-12_0:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Test with Xcode 12.0
+        run: ./xcode_test.sh Xcode_12
+
   linux-5_1:
     runs-on: ubuntu-latest
 
@@ -106,5 +115,16 @@ jobs:
 
       - name: Test on Linux with Swift 5.2
         uses: Didstopia/SwiftAction@v1.0.2
+        with:
+          swift-action: test --enable-test-discovery
+
+  linux-5_3:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Test on Linux with Swift 5.3
+        uses: Didstopia/SwiftAction@v1.0.3
         with:
           swift-action: test --enable-test-discovery

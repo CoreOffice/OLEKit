@@ -61,7 +61,12 @@ public struct DirectoryEntry: Equatable {
 
   public let children: [DirectoryEntry]
 
-  private init?(_ stream: inout DataReader, index: UInt32, sectorSize: UInt16) throws {
+  private init?(
+    _ stream: inout DataReader,
+    _ peers: inout [DirectoryEntry],
+    index: UInt32,
+    sectorSize: UInt16
+  ) throws {
     guard index != noStream else { return nil }
 
     stream.byteOffset = Int(index) * Self.sizeInBytes
@@ -122,29 +127,47 @@ public struct DirectoryEntry: Equatable {
     guard idx == noStream || idx < maxEntries
     else { throw OLEError.directoryEntryIndexOOB(actual: childIndex, expected: maxEntries) }
 
-    children = try [leftIndex, childIndex, rightIndex].compactMap {
-      try DirectoryEntry(&stream, index: $0, sectorSize: sectorSize)
+    if let leftPeer = try DirectoryEntry(&stream, &peers, index: leftIndex, sectorSize: sectorSize) {
+      peers.append(leftPeer)
     }
+    if let rightPeer = try DirectoryEntry(&stream, &peers, index: rightIndex, sectorSize: sectorSize) {
+      peers.append(rightPeer)
+    }
+
+    var children = [DirectoryEntry]()
+    if let child = try DirectoryEntry(&stream, &children, index: childIndex, sectorSize: sectorSize) {
+      children.append(child)
+    }
+    self.children = children
   }
 
-  init?(
+  private static func entries(
     index: UInt32,
     at sectorID: UInt32,
     in fileHandle: FileHandle,
     _ header: Header,
     fat: [UInt32]
-  ) throws {
+  ) throws -> [DirectoryEntry] {
     var stream = try fileHandle.oleStream(
       sectorID: sectorID,
       firstSectorOffset: UInt64(header.sectorSize),
       sectorSize: header.sectorSize,
       fat: fat
     )
+    var peers = [DirectoryEntry]()
 
-    try self.init(&stream, index: index, sectorSize: header.sectorSize)
+    if let entry = try DirectoryEntry(&stream, &peers, index: index, sectorSize: header.sectorSize) {
+      peers.append(entry)
+    }
+    return peers
   }
 
-  init(rootAt sectorID: UInt32, in fileHandle: FileHandle, _ header: Header, fat: [UInt32]) throws {
-    try self.init(index: 0, at: sectorID, in: fileHandle, header, fat: fat)!
+  static func entries(
+    rootAt sectorID: UInt32,
+    in fileHandle: FileHandle,
+    _ header: Header,
+    fat: [UInt32]
+  ) throws -> [DirectoryEntry] {
+    try Self.entries(index: 0, at: sectorID, in: fileHandle, header, fat: fat)
   }
 }
