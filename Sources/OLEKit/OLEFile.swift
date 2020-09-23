@@ -52,12 +52,12 @@ public final class OLEFile {
 
     fat = try fileHandle.loadFAT(headerStream: &stream, header)
 
-    root = try DirectoryEntry(
+    root = try DirectoryEntry.entries(
       rootAt: header.firstDirectorySector,
       in: fileHandle,
       header,
       fat: fat
-    )
+    )[0]
 
     miniFAT = try fileHandle.loadMiniFAT(header, root: root, fat: fat)
   }
