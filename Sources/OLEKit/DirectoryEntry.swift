@@ -136,12 +136,12 @@ public struct DirectoryEntry: Equatable {
 
     var children = [DirectoryEntry]()
     if let child = try DirectoryEntry(&stream, &children, index: childIndex, sectorSize: sectorSize) {
-      try children.append(child).self
+      children.append(child)
     }
     self.children = children
   }
 
-  static func entries(
+  private static func entries(
     index: UInt32,
     at sectorID: UInt32,
     in fileHandle: FileHandle,
@@ -162,7 +162,12 @@ public struct DirectoryEntry: Equatable {
     return peers
   }
 
-  static func entries(rootAt sectorID: UInt32, in fileHandle: FileHandle, _ header: Header, fat: [UInt32]) throws -> [DirectoryEntry] {
+  static func entries(
+    rootAt sectorID: UInt32,
+    in fileHandle: FileHandle,
+    _ header: Header,
+    fat: [UInt32]
+  ) throws -> [DirectoryEntry] {
     try Self.entries(index: 0, at: sectorID, in: fileHandle, header, fat: fat)
   }
 }
