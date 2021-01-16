@@ -128,4 +128,17 @@ final class OLEKitTests: XCTestCase {
       "FileHeader",
     ])
   }
+
+  func testOLEFile2() throws {
+    let url = URL(fileURLWithPath: #file)
+      .deletingLastPathComponent()
+      .appendingPathComponent("blank.hwp")
+    let wrapper = try FileWrapper(url: url, options: .immediate)
+    let ole = try OLEFile(url.path)
+    let ole2 = try OLEFile2(wrapper)
+    XCTAssertEqual(ole.header, ole2.header)
+    XCTAssertEqual(ole.fat, ole2.fat)
+    XCTAssertEqual(ole.miniFAT, ole2.miniFAT)
+    XCTAssertEqual(ole.root, ole2.root)
+  }
 }

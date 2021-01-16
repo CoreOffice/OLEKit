@@ -1,52 +1,14 @@
-// Copyright 2020 CoreOffice contributors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 import Foundation
 
-/// Constants for Sector IDs (from AAF specifications)
-enum SectorID: UInt32 {
-  /// (-6) maximum SECT
-  case maximumSector = 0xFFFF_FFFA
-
-  /// (-4) denotes a DIFAT sector in a FAT
-  case difatSector = 0xFFFF_FFFC
-
-  /// (-3) denotes a FAT sector in a FAT
-  case fatSector = 0xFFFF_FFFD
-
-  ///  (-2) end of a virtual stream chain
-  case endOfChain = 0xFFFF_FFFE
-
-  ///  (-1) unallocated sector
-  case freeSector = 0xFFFF_FFFF
-}
-
-/** The 1st sector of the file contains sector numbers for the first 109
- FAT sectors, right after the header which is 76 bytes long.
- (always 109, whatever the sector size: 512 bytes = 76+4*109)
- Additional sectors are described by DIFAT blocks */
-let maxFATSectorsCount: UInt32 = 109
-
-extension FileHandle {
+extension FileWrapper {
   func loadSector(_ header: Header, index: UInt32) throws -> DataReader {
-    let sectorOffset = UInt64(header.sectorSize) * UInt64(index + 1)
+    let sectorOffset = Int(header.sectorSize) * Int(index + 1)
 
     guard sectorOffset < header.fileSize
-    else { throw OLEError.invalidFATSector(byteOffset: sectorOffset) }
+    else { throw OLEError.invalidFATSector(byteOffset: UInt64(sectorOffset)) }
 
-    seek(toFileOffset: sectorOffset)
-    return DataReader(readData(ofLength: Int(header.sectorSize)))
+    let range = sectorOffset..<(sectorOffset + Int(header.sectorSize))
+    return DataReader(regularFileContents![range])
   }
 
   func loadSectors(
@@ -170,5 +132,74 @@ extension FileHandle {
     }
 
     return result
+  }
+
+  func oleStream(
+    sectorID: UInt32,
+    expectedStreamSize: UInt64? = nil,
+    firstSectorOffset: UInt64,
+    sectorSize: UInt16,
+    fat: [UInt32]
+  ) throws -> DataReader {
+    guard !(expectedStreamSize == 0 && sectorID == SectorID.endOfChain.rawValue)
+    else { throw OLEError.invalidEmptyStream }
+
+    let sectorSize = UInt64(sectorSize)
+    let calculatedStreamSize = expectedStreamSize ?? UInt64(fat.count) * UInt64(sectorSize)
+    let numberOfSectors = (calculatedStreamSize + sectorSize - 1) / sectorSize
+
+    // This number should (at least) be less than the total number of
+    // sectors in the given FAT:
+    guard numberOfSectors <= fat.count
+    else { throw OLEError.streamTooLarge(actual: numberOfSectors, expected: fat.count) }
+
+    var currentSectorID = sectorID
+    var data = Data()
+    var offset = regularFileContents!.startIndex
+    for _ in 0..<numberOfSectors {
+      guard currentSectorID != SectorID.endOfChain.rawValue else {
+        if expectedStreamSize != nil {
+          // This means that the stream is smaller than declared:
+          throw OLEError.incompleteStream(
+            firstSectorID: sectorID,
+            actual: data.count,
+            expected: numberOfSectors * sectorSize
+          )
+        } else {
+          // Reached end of chain for a stream with unknown size
+          break
+        }
+      }
+
+      guard currentSectorID >= 0 && UInt64(currentSectorID) < fat.count
+      else { throw OLEError.invalidOLEStreamSectorID(id: currentSectorID, total: fat.count) }
+
+      offset = regularFileContents!.startIndex + Int(firstSectorOffset) + Int(sectorSize) * Int(currentSectorID)
+
+      // if sector is the last of the file, sometimes it is not a
+      // complete sector (of 512 or 4K), so we may read less than
+      // sectorsize.
+      if currentSectorID == fat.count - 1 {
+        data.append(regularFileContents![offset..<regularFileContents!.endIndex])
+      } else {
+        data.append(regularFileContents![offset..<(offset + Int(sectorSize))])
+      }
+
+      currentSectorID = fat[Int(currentSectorID)]
+    }
+
+    if data.count > calculatedStreamSize {
+      // `data` is truncated to the expected stream size
+      data = data.prefix(Int(calculatedStreamSize))
+    } else if let expectedStreamSize = expectedStreamSize, data.count < expectedStreamSize {
+      // the stream size was not inferred, but was smaller than expected
+      throw OLEError.incompleteStream(
+        firstSectorID: sectorID,
+        actual: data.count,
+        expected: expectedStreamSize
+      )
+    }
+
+    return DataReader(data)
   }
 }

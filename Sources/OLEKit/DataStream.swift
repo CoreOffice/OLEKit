@@ -52,7 +52,7 @@ public final class DataReader: Reader {
     precondition(byteOffset + 1 <= data.count)
     defer { byteOffset += 1 }
 
-    return data[byteOffset]
+    return data[data.startIndex + byteOffset]
   }
 
   /// Read two bytes in little-endian order as a single `UInt16` value and
@@ -61,7 +61,7 @@ public final class DataReader: Reader {
     precondition(byteOffset + 2 <= data.count)
     defer { byteOffset += 2 }
 
-    return (UInt16(data[byteOffset + 1]) << 8) + UInt16(data[byteOffset])
+    return (UInt16(data[data.startIndex + byteOffset + 1]) << 8) + UInt16(data[data.startIndex + byteOffset])
   }
 
   /// Read four bytes in little-endian order as a single `UInt32` value and
@@ -70,10 +70,10 @@ public final class DataReader: Reader {
     precondition(byteOffset + 4 <= data.count)
     defer { byteOffset += 4 }
 
-    return (UInt32(data[byteOffset + 3]) << 24)
-      + (UInt32(data[byteOffset + 2]) << 16)
-      + (UInt32(data[byteOffset + 1]) << 8)
-      + UInt32(data[byteOffset])
+    return (UInt32(data[data.startIndex + byteOffset + 3]) << 24)
+      + (UInt32(data[data.startIndex + byteOffset + 2]) << 16)
+      + (UInt32(data[data.startIndex + byteOffset + 1]) << 8)
+      + UInt32(data[data.startIndex + byteOffset])
   }
 
   /// Read a given `count` of bytes as raw data and increment `byteOffset` by `count`.
@@ -81,7 +81,7 @@ public final class DataReader: Reader {
     precondition(byteOffset + length <= data.count)
     defer { byteOffset += length }
 
-    return data[byteOffset..<byteOffset + length]
+    return data[data.startIndex + byteOffset..<data.startIndex + byteOffset + length]
   }
 
   public func readDataToEnd() -> Data {
@@ -89,6 +89,6 @@ public final class DataReader: Reader {
 
     defer { byteOffset = data.count - 1 }
 
-    return data[byteOffset..<data.count]
+    return data[data.startIndex + byteOffset..<data.endIndex]
   }
 }
