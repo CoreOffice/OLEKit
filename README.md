@@ -72,7 +72,7 @@ for a more detailed example.
 
 **Apple Platforms**
 
-- Xcode 11.0 or later
+- Xcode 11.2 or later
 - Swift 5.1 or later
 
 **Linux**
