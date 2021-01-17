@@ -129,6 +129,8 @@ final class OLEKitTests: XCTestCase {
     ])
   }
 
+  #if os(iOS) || os(watchOS) || os(tvOS) || os(macOS)
+
   func testOLEFile2() throws {
     let url = URL(fileURLWithPath: #file)
       .deletingLastPathComponent()
@@ -141,4 +143,6 @@ final class OLEKitTests: XCTestCase {
     XCTAssertEqual(ole.miniFAT, ole2.miniFAT)
     XCTAssertEqual(ole.root, ole2.root)
   }
+
+  #endif
 }

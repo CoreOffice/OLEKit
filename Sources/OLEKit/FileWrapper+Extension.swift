@@ -1,5 +1,7 @@
 import Foundation
 
+#if os(iOS) || os(watchOS) || os(tvOS) || os(macOS)
+
 extension FileWrapper {
   func loadSector(_ header: Header, index: UInt32) throws -> DataReader {
     let sectorOffset = Int(header.sectorSize) * Int(index + 1)
@@ -203,3 +205,5 @@ extension FileWrapper {
     return DataReader(data)
   }
 }
+
+#endif

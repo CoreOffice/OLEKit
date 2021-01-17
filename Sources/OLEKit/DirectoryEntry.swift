@@ -171,6 +171,8 @@ public struct DirectoryEntry: Equatable {
     try Self.entries(index: 0, at: sectorID, in: fileHandle, header, fat: fat)
   }
 
+  #if os(iOS) || os(watchOS) || os(tvOS) || os(macOS)
+
   private static func entries(
     index: UInt32,
     at sectorID: UInt32,
@@ -200,4 +202,6 @@ public struct DirectoryEntry: Equatable {
   ) throws -> [DirectoryEntry] {
     try Self.entries(index: 0, at: sectorID, in: fileWrapper, header, fat: fat)
   }
+
+  #endif
 }

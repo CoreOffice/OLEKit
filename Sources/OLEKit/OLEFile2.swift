@@ -14,6 +14,8 @@
 
 import Foundation
 
+#if os(iOS) || os(watchOS) || os(tvOS) || os(macOS)
+
 public final class OLEFile2 {
   private var fileWrapper: FileWrapper
   let header: Header
@@ -88,3 +90,5 @@ public final class OLEFile2 {
     )
   }
 }
+
+#endif
