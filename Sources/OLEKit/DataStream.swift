@@ -30,6 +30,8 @@ public final class DataWriter {
 public final class DataReader: Reader {
   let data: Data
 
+  var regularFileContents: Data? { data }
+
   /// Current byte offset within the stream.
   var byteOffset = 0
 

@@ -15,7 +15,7 @@
 import Foundation
 
 public final class OLEFile {
-  private var fileHandle: FileHandle
+  private var reader: Reader
   let header: Header
 
   /// File Allocation Table, also known as SAT – Sector Allocation Table
@@ -40,7 +40,7 @@ public final class OLEFile {
     guard let fileHandle = FileHandle(forReadingAtPath: path)
     else { throw OLEError.fileNotAvailableForReading(path: path) }
 
-    self.fileHandle = fileHandle
+    reader = fileHandle
 
     guard fileSize >= 512
     else { throw OLEError.incompleteHeader }
@@ -61,6 +61,33 @@ public final class OLEFile {
 
     miniFAT = try fileHandle.loadMiniFAT(header, root: root, fat: fat)
   }
+
+  #if os(iOS) || os(watchOS) || os(tvOS) || os(macOS)
+
+  public init(_ fileWrapper: FileWrapper) throws {
+    reader = fileWrapper
+
+    guard let data = fileWrapper.regularFileContents
+    else { throw OLEError.fileDoesNotExist(fileWrapper.filename ?? "") }
+
+    var stream = DataReader(data[..<512])
+    guard let fileSize = fileWrapper.fileAttributes[FileAttributeKey.size.rawValue] as? Int
+    else { throw OLEError.fileDoesNotExist(fileWrapper.filename ?? "") }
+    header = try Header(&stream, fileSize: fileSize, path: fileWrapper.filename ?? "")
+
+    fat = try fileWrapper.loadFAT(headerStream: &stream, header)
+
+    root = try DirectoryEntry.entries(
+      rootAt: header.firstDirectorySector,
+      in: fileWrapper,
+      header,
+      fat: fat
+    )[0]
+
+    miniFAT = try fileWrapper.loadMiniFAT(header, root: root, fat: fat)
+  }
+
+  #endif
 
   /// Return an instance of `DataReader` that contains a given stream entry
   public func stream(_ entry: DirectoryEntry) throws -> DataReader {
@@ -89,7 +116,7 @@ public final class OLEFile {
 
   /// Always loads data according to FAT ignoring `miniStream` and `miniFAT`
   func streamForceFAT(_ entry: DirectoryEntry) throws -> DataReader {
-    try fileHandle.oleStream(
+    try reader.oleStream(
       sectorID: entry.firstStreamSector,
       expectedStreamSize: entry.streamSize,
       firstSectorOffset: UInt64(header.sectorSize),

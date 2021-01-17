@@ -2,7 +2,19 @@ import Foundation
 
 #if os(iOS) || os(watchOS) || os(tvOS) || os(macOS)
 
-extension FileWrapper {
+extension FileWrapper: Reader {
+  func seek(toOffset: Int) {
+    seek(toOffset: toOffset)
+  }
+
+  func readData(ofLength: Int) -> Data {
+    readData(ofLength: ofLength)
+  }
+
+  func readDataToEnd() -> Data {
+    readDataToEnd()
+  }
+
   func loadSector(_ header: Header, index: UInt32) throws -> DataReader {
     let sectorOffset = Int(header.sectorSize) * Int(index + 1)
 

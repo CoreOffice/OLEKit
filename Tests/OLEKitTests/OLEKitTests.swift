@@ -131,17 +131,17 @@ final class OLEKitTests: XCTestCase {
 
   #if os(iOS) || os(watchOS) || os(tvOS) || os(macOS)
 
-  func testOLEFile2() throws {
+  func testOLEFileFromFileWrapper() throws {
     let url = URL(fileURLWithPath: #file)
       .deletingLastPathComponent()
       .appendingPathComponent("blank.hwp")
     let wrapper = try FileWrapper(url: url, options: .immediate)
-    let ole = try OLEFile(url.path)
-    let ole2 = try OLEFile2(wrapper)
-    XCTAssertEqual(ole.header, ole2.header)
-    XCTAssertEqual(ole.fat, ole2.fat)
-    XCTAssertEqual(ole.miniFAT, ole2.miniFAT)
-    XCTAssertEqual(ole.root, ole2.root)
+    let oleFromPath = try OLEFile(url.path)
+    let oleFromWrapper = try OLEFile(wrapper)
+    XCTAssertEqual(oleFromPath.header, oleFromWrapper.header)
+    XCTAssertEqual(oleFromPath.fat, oleFromWrapper.fat)
+    XCTAssertEqual(oleFromPath.miniFAT, oleFromWrapper.miniFAT)
+    XCTAssertEqual(oleFromPath.root, oleFromWrapper.root)
   }
 
   #endif
