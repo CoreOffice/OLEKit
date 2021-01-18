@@ -51,10 +51,9 @@ public final class OLEFile {
   public convenience init(_ fileWrapper: FileWrapper) throws {
     let fileName = fileWrapper.filename ?? ""
 
-    guard let data = fileWrapper.regularFileContents
-    else { throw OLEError.fileDoesNotExist(fileName) }
-
-    guard let fileSize = fileWrapper.fileAttributes[FileAttributeKey.size.rawValue] as? Int
+    guard
+      let data = fileWrapper.regularFileContents,
+      let fileSize = fileWrapper.fileAttributes[FileAttributeKey.size.rawValue] as? Int
     else { throw OLEError.fileDoesNotExist(fileName) }
 
     try self.init(data: data, fileSize: fileSize, path: fileName)
