@@ -1,4 +1,4 @@
-# 0.3.0
+# 0.3.0 (18 January 2021)
 
 This release adds support for creating `OLEFile` instances from a `FileWrapper`. Many thanks
 to [@sboh1214](https://github.com/sboh1214) for the contribution!
