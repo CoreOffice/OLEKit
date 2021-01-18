@@ -14,7 +14,7 @@
 
 import Foundation
 
-let noStream: UInt32 = 0xFFFF_FFFF
+private let noStream: UInt32 = 0xFFFF_FFFF
 
 /*
  struct to parse directory entries: '<64sHBBIII16sIQQIII'
