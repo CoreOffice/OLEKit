@@ -1,3 +1,12 @@
+# 0.3.0
+
+This release adds support for creating `OLEFile` instances from a `FileWrapper`. Many thanks
+to [@sboh1214](https://github.com/sboh1214) for the contribution!
+
+**Merged pull requests:**
+
+- Add support for `FileWrapper` to `OLEFile` ([#9](https://github.com/CoreOffice/OLEKit/pull/9)) via [@sboh1214](https://github.com/sboh1214)
+
 # 0.2.0 (29 September 2020)
 
 This a bugfix release that breaks API compatibility. It fixes issues with reading OLE mini-streams,
