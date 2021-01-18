@@ -38,14 +38,14 @@ enum SectorID: UInt32 {
  Additional sectors are described by DIFAT blocks */
 private let maxFATSectorsCount: UInt32 = 109
 
-extension FileHandle {
+extension Reader {
   func loadSector(_ header: Header, index: UInt32) throws -> DataReader {
     let sectorOffset = UInt64(header.sectorSize) * UInt64(index + 1)
 
     guard sectorOffset < header.fileSize
     else { throw OLEError.invalidFATSector(byteOffset: sectorOffset) }
 
-    seek(toFileOffset: sectorOffset)
+    seek(toOffset: Int(sectorOffset))
     return DataReader(readData(ofLength: Int(header.sectorSize)))
   }
 

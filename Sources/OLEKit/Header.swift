@@ -67,7 +67,7 @@ private let magic = Data([0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1])
  SECT _sectFat[109]; // [4CH,436] the SECTs of first 109 FAT sectors
  };
  */
-struct Header {
+struct Header: Equatable {
   /// Size of the header, which is a sum of sizes of all fields from the spec.
   static let sizeInBytes = 76
 

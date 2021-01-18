@@ -15,7 +15,7 @@
 import Foundation
 
 public final class OLEFile {
-  private var fileHandle: FileHandle
+  private var reader: Reader
   let header: Header
 
   /// File Allocation Table, also known as SAT – Sector Allocation Table
@@ -29,7 +29,7 @@ public final class OLEFile {
 
   public let root: DirectoryEntry
 
-  public init(_ path: String) throws {
+  public convenience init(_ path: String) throws {
     guard FileManager.default.fileExists(atPath: path)
     else { throw OLEError.fileDoesNotExist(path) }
 
@@ -40,26 +40,45 @@ public final class OLEFile {
     guard let fileHandle = FileHandle(forReadingAtPath: path)
     else { throw OLEError.fileNotAvailableForReading(path: path) }
 
-    self.fileHandle = fileHandle
+    let allData = fileHandle.readDataToEndOfFile()
+    fileHandle.seek(toFileOffset: UInt64(0))
 
+    try self.init(data: allData, fileSize: fileSize, path: path)
+  }
+
+  #if os(iOS) || os(watchOS) || os(tvOS) || os(macOS)
+
+  public convenience init(_ fileWrapper: FileWrapper) throws {
+    let fileName = fileWrapper.filename ?? ""
+
+    guard
+      let data = fileWrapper.regularFileContents,
+      let fileSize = fileWrapper.fileAttributes[FileAttributeKey.size.rawValue] as? Int
+    else { throw OLEError.fileDoesNotExist(fileName) }
+
+    try self.init(data: data, fileSize: fileSize, path: fileName)
+  }
+
+  #endif
+
+  private init(data: Data, fileSize: Int, path: String) throws {
     guard fileSize >= 512
     else { throw OLEError.incompleteHeader }
 
-    let data = fileHandle.readData(ofLength: 512)
-
-    var stream = DataReader(data)
+    reader = DataReader(data)
+    var stream = DataReader(data[..<512])
     header = try Header(&stream, fileSize: fileSize, path: path)
 
-    fat = try fileHandle.loadFAT(headerStream: &stream, header)
+    fat = try reader.loadFAT(headerStream: &stream, header)
 
     root = try DirectoryEntry.entries(
       rootAt: header.firstDirectorySector,
-      in: fileHandle,
+      in: reader,
       header,
       fat: fat
     )[0]
 
-    miniFAT = try fileHandle.loadMiniFAT(header, root: root, fat: fat)
+    miniFAT = try reader.loadMiniFAT(header, root: root, fat: fat)
   }
 
   /// Return an instance of `DataReader` that contains a given stream entry
@@ -89,7 +108,7 @@ public final class OLEFile {
 
   /// Always loads data according to FAT ignoring `miniStream` and `miniFAT`
   func streamForceFAT(_ entry: DirectoryEntry) throws -> DataReader {
-    try fileHandle.oleStream(
+    try reader.oleStream(
       sectorID: entry.firstStreamSector,
       expectedStreamSize: entry.streamSize,
       firstSectorOffset: UInt64(header.sectorSize),

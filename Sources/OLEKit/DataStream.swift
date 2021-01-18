@@ -31,10 +31,11 @@ public final class DataReader: Reader {
   let data: Data
 
   /// Current byte offset within the stream.
-  var byteOffset = 0
+  var byteOffset: Int
 
   init(_ data: Data) {
     self.data = data
+    byteOffset = data.startIndex
   }
 
   public var totalBytes: Int {
@@ -42,14 +43,14 @@ public final class DataReader: Reader {
   }
 
   public func seek(toOffset offset: Int) {
-    precondition(offset < data.count)
+    precondition(offset < data.endIndex)
 
     byteOffset = offset
   }
 
   /// Read a single byte from the stream and increment `byteOffset` by 1.
   public func read() -> UInt8 {
-    precondition(byteOffset + 1 <= data.count)
+    precondition(byteOffset + 1 <= data.endIndex)
     defer { byteOffset += 1 }
 
     return data[byteOffset]
@@ -58,7 +59,7 @@ public final class DataReader: Reader {
   /// Read two bytes in little-endian order as a single `UInt16` value and
   /// increment `byteOffset` by 2.
   public func read() -> UInt16 {
-    precondition(byteOffset + 2 <= data.count)
+    precondition(byteOffset + 2 <= data.endIndex)
     defer { byteOffset += 2 }
 
     return (UInt16(data[byteOffset + 1]) << 8) + UInt16(data[byteOffset])
@@ -67,7 +68,7 @@ public final class DataReader: Reader {
   /// Read four bytes in little-endian order as a single `UInt32` value and
   /// increment `byteOffset` by 4.
   public func read() -> UInt32 {
-    precondition(byteOffset + 4 <= data.count)
+    precondition(byteOffset + 4 <= data.endIndex)
     defer { byteOffset += 4 }
 
     return (UInt32(data[byteOffset + 3]) << 24)
@@ -78,7 +79,7 @@ public final class DataReader: Reader {
 
   /// Read a given `count` of bytes as raw data and increment `byteOffset` by `count`.
   public func readData(ofLength length: Int) -> Data {
-    precondition(byteOffset + length <= data.count)
+    precondition(byteOffset + length <= data.endIndex)
     defer { byteOffset += length }
 
     return data[byteOffset..<byteOffset + length]
@@ -89,6 +90,6 @@ public final class DataReader: Reader {
 
     defer { byteOffset = data.count - 1 }
 
-    return data[byteOffset..<data.count]
+    return data[byteOffset..<data.endIndex]
   }
 }
