@@ -29,7 +29,7 @@ public final class OLEFile {
 
   public let root: DirectoryEntry
 
-  public init(_ path: String) throws {
+  public convenience init(_ path: String) throws {
     guard FileManager.default.fileExists(atPath: path)
     else { throw OLEError.fileDoesNotExist(path) }
 
@@ -40,54 +40,47 @@ public final class OLEFile {
     guard let fileHandle = FileHandle(forReadingAtPath: path)
     else { throw OLEError.fileNotAvailableForReading(path: path) }
 
-    reader = fileHandle
+    let allData = fileHandle.readDataToEndOfFile()
+    fileHandle.seek(toFileOffset: UInt64(0))
 
-    guard fileSize >= 512
-    else { throw OLEError.incompleteHeader }
-
-    let data = fileHandle.readData(ofLength: 512)
-
-    var stream = DataReader(data)
-    header = try Header(&stream, fileSize: fileSize, path: path)
-
-    fat = try fileHandle.loadFAT(headerStream: &stream, header)
-
-    root = try DirectoryEntry.entries(
-      rootAt: header.firstDirectorySector,
-      in: fileHandle,
-      header,
-      fat: fat
-    )[0]
-
-    miniFAT = try fileHandle.loadMiniFAT(header, root: root, fat: fat)
+    try self.init(data: allData, fileSize: fileSize, path: path)
   }
 
   #if os(iOS) || os(watchOS) || os(tvOS) || os(macOS)
 
-  public init(_ fileWrapper: FileWrapper) throws {
-    reader = fileWrapper
+  public convenience init(_ fileWrapper: FileWrapper) throws {
+    let fileName = fileWrapper.filename ?? ""
 
     guard let data = fileWrapper.regularFileContents
-    else { throw OLEError.fileDoesNotExist(fileWrapper.filename ?? "") }
+    else { throw OLEError.fileDoesNotExist(fileName) }
 
-    var stream = DataReader(data[..<512])
     guard let fileSize = fileWrapper.fileAttributes[FileAttributeKey.size.rawValue] as? Int
-    else { throw OLEError.fileDoesNotExist(fileWrapper.filename ?? "") }
-    header = try Header(&stream, fileSize: fileSize, path: fileWrapper.filename ?? "")
+    else { throw OLEError.fileDoesNotExist(fileName) }
 
-    fat = try fileWrapper.loadFAT(headerStream: &stream, header)
+    try self.init(data: data, fileSize: fileSize, path: fileName)
+  }
+
+  #endif
+
+  private init(data: Data, fileSize: Int, path: String) throws {
+    guard fileSize >= 512
+    else { throw OLEError.incompleteHeader }
+
+    reader = DataReader(data)
+    var stream = DataReader(data[..<512])
+    header = try Header(&stream, fileSize: fileSize, path: path)
+
+    fat = try reader.loadFAT(headerStream: &stream, header)
 
     root = try DirectoryEntry.entries(
       rootAt: header.firstDirectorySector,
-      in: fileWrapper,
+      in: reader,
       header,
       fat: fat
     )[0]
 
-    miniFAT = try fileWrapper.loadMiniFAT(header, root: root, fat: fat)
+    miniFAT = try reader.loadMiniFAT(header, root: root, fat: fat)
   }
-
-  #endif
 
   /// Return an instance of `DataReader` that contains a given stream entry
   public func stream(_ entry: DirectoryEntry) throws -> DataReader {

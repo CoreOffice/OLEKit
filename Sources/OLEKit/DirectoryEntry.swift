@@ -144,11 +144,11 @@ public struct DirectoryEntry: Equatable {
   private static func entries(
     index: UInt32,
     at sectorID: UInt32,
-    in fileHandle: FileHandle,
+    in reader: Reader,
     _ header: Header,
     fat: [UInt32]
   ) throws -> [DirectoryEntry] {
-    var stream = try fileHandle.oleStream(
+    var stream = try reader.oleStream(
       sectorID: sectorID,
       firstSectorOffset: UInt64(header.sectorSize),
       sectorSize: header.sectorSize,
@@ -164,44 +164,10 @@ public struct DirectoryEntry: Equatable {
 
   static func entries(
     rootAt sectorID: UInt32,
-    in fileHandle: FileHandle,
+    in reader: Reader,
     _ header: Header,
     fat: [UInt32]
   ) throws -> [DirectoryEntry] {
-    try Self.entries(index: 0, at: sectorID, in: fileHandle, header, fat: fat)
+    try Self.entries(index: 0, at: sectorID, in: reader, header, fat: fat)
   }
-
-  #if os(iOS) || os(watchOS) || os(tvOS) || os(macOS)
-
-  private static func entries(
-    index: UInt32,
-    at sectorID: UInt32,
-    in fileWrapper: FileWrapper,
-    _ header: Header,
-    fat: [UInt32]
-  ) throws -> [DirectoryEntry] {
-    var stream = try fileWrapper.oleStream(
-      sectorID: sectorID,
-      firstSectorOffset: UInt64(header.sectorSize),
-      sectorSize: header.sectorSize,
-      fat: fat
-    )
-    var peers = [DirectoryEntry]()
-
-    if let entry = try DirectoryEntry(&stream, &peers, index: index, sectorSize: header.sectorSize) {
-      peers.append(entry)
-    }
-    return peers
-  }
-
-  static func entries(
-    rootAt sectorID: UInt32,
-    in fileWrapper: FileWrapper,
-    _ header: Header,
-    fat: [UInt32]
-  ) throws -> [DirectoryEntry] {
-    try Self.entries(index: 0, at: sectorID, in: fileWrapper, header, fat: fat)
-  }
-
-  #endif
 }
