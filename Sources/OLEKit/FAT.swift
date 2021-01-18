@@ -36,7 +36,7 @@ enum SectorID: UInt32 {
  FAT sectors, right after the header which is 76 bytes long.
  (always 109, whatever the sector size: 512 bytes = 76+4*109)
  Additional sectors are described by DIFAT blocks */
-let maxFATSectorsCount: UInt32 = 109
+private let maxFATSectorsCount: UInt32 = 109
 
 extension Reader {
   func loadSector(_ header: Header, index: UInt32) throws -> DataReader {
