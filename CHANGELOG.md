@@ -1,3 +1,12 @@
+# 0.3.1 (25 January 2021)
+
+This release fixes an issue with file size attributes in some cases (such as iOS Document-based App with SwiftUI)
+during `OLEFile` creation.
+
+**Merged pull requests:**
+
+- Fix issue that fileSize is nil on iOS ([#11](https://github.com/CoreOffice/OLEKit/pull/11)) via [@sboh1214](https://github.com/sboh1214)
+
 # 0.3.0 (18 January 2021)
 
 This release adds support for creating `OLEFile` instances from a `FileWrapper`. Many thanks
