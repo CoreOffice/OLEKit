@@ -1,7 +1,7 @@
 # 0.3.1 (25 January 2021)
 
-This release fixes issue that it can't get file size from attributes in some cases (such as iOS Document-based App with SwiftUI)
-during creating `OLEFile` instances.
+This release fixes an issue with file size attributes in some cases (such as iOS Document-based App with SwiftUI)
+during `OLEFile` creation.
 
 **Merged pull requests:**
 
