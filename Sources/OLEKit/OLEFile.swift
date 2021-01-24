@@ -33,17 +33,13 @@ public final class OLEFile {
     guard FileManager.default.fileExists(atPath: path)
     else { throw OLEError.fileDoesNotExist(path) }
 
-    let attributes = try FileManager.default.attributesOfItem(atPath: path)
-    // swiftlint:disable:next force_cast
-    let fileSize = attributes[FileAttributeKey.size] as! Int
-
     guard let fileHandle = FileHandle(forReadingAtPath: path)
     else { throw OLEError.fileNotAvailableForReading(path: path) }
 
     let allData = fileHandle.readDataToEndOfFile()
     fileHandle.seek(toFileOffset: UInt64(0))
 
-    try self.init(data: allData, fileSize: fileSize, path: path)
+    try self.init(data: allData, path: path)
   }
 
   #if os(iOS) || os(watchOS) || os(tvOS) || os(macOS)
@@ -51,17 +47,16 @@ public final class OLEFile {
   public convenience init(_ fileWrapper: FileWrapper) throws {
     let fileName = fileWrapper.filename ?? ""
 
-    guard
-      let data = fileWrapper.regularFileContents,
-      let fileSize = fileWrapper.fileAttributes[FileAttributeKey.size.rawValue] as? Int
+    guard let data = fileWrapper.regularFileContents
     else { throw OLEError.fileDoesNotExist(fileName) }
 
-    try self.init(data: data, fileSize: fileSize, path: fileName)
+    try self.init(data: data, path: fileName)
   }
 
   #endif
 
-  private init(data: Data, fileSize: Int, path: String) throws {
+  private init(data: Data, path: String) throws {
+    let fileSize = data.count
     guard fileSize >= 512
     else { throw OLEError.incompleteHeader }
 
