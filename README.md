@@ -145,7 +145,7 @@ PRs before merging.
 This project adheres to the [Contributor Covenant Code of
 Conduct](https://github.com/CoreOffice/OLEKit/blob/master/CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code. Please report
-unacceptable behavior to conduct@coreoffice.org.
+unacceptable behavior to coreoffice@desiatov.com.
 
 ## License
 
