@@ -106,13 +106,6 @@ GUI](https://developer.apple.com/documentation/xcode/adding_package_dependencies
 
 ## Contributing
 
-### Sponsorship
-
-If this library saved you any amount of time or money, please consider [sponsoring
-the work of its maintainer](https://github.com/sponsors/MaxDesiatov). While some of the
-sponsorship tiers give you priority support or even consulting time, any amount is
-appreciated and helps in maintaining the project.
-
 ### Coding Style
 
 This project uses [SwiftFormat](https://github.com/nicklockwood/SwiftFormat)
