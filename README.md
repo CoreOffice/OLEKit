@@ -19,6 +19,8 @@ Some of the file formats that utilize it:
 
 Automatically generated documentation is available on [our GitHub Pages](https://coreoffice.github.io/OLEKit/).
 
+[Join our Discord](https://discord.gg/H6799jh) for any questions and friendly banter.
+
 ## Example
 
 An OLE2 file has [a minuature filesystem embedded in
